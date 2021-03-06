@@ -14,8 +14,8 @@ class UniGridCell
 {
 public:
 	Vector2D minPos, maxPos;
-	int state; //0 = empty, 1 = player wall, 2 = enemy wall
-	//std::vector<GameObject*> ballsInCell;
+	int state; //check gameobject for enum
+	std::vector<GameObject*> cyclesInCell;
 
 	virtual void Init(Vector2D min, Vector2D max);
 	virtual void Update(double dt);
@@ -24,11 +24,12 @@ public:
 class UniGrid
 {
 public:
+
 	int cellSize = 8;
 	int windowX, windowY;
 	std::vector<GameObject*>* lightcycles;
-	ObjectPool<GameObject>* coll_objects;
-	ObjectPool<GameObject>* grid_coll_objects;
+	//ObjectPool<GameObject>* coll_objects;
+	//ObjectPool<GameObject>* grid_coll_objects;
 	// vector2d to remember positions of each gridsquare, and objectpool to note whats inside
 	std::vector<std::vector<UniGridCell>> grid;
 
@@ -53,9 +54,10 @@ public:
 
 	virtual ~UniGrid() { SDL_Log("UniGrid::~UniGrid"); }
 
-	virtual void Init(int cellSize, std::vector<GameObject*>* lightcycles, ObjectPool<GameObject>* grid_coll_objects, int windowX, int windowY);
+	virtual void Init(int cellSize, std::vector<GameObject*>* lightcycles,  int windowX, int windowY);
 	virtual void Update(double dt);
 	void UpdateState(double dt);
+	void UniGrid::CheckCollisions();
 
 
 };

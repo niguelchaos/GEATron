@@ -81,3 +81,6 @@ void LightwallRenderComponent::Destroy()
 		sprites[i] = NULL;
 	}
 }
+
+
+

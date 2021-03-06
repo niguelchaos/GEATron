@@ -4,8 +4,11 @@
 #include "avancezlib.h"
 #include "rocket.h"
 #include "lightwall.h"
+#include "unigrid.h"
 #include <vector>
 #include <iostream>
+
+
 
 class PlayerBehaviourComponent : public Component
 {
@@ -15,7 +18,7 @@ class PlayerBehaviourComponent : public Component
 	float time_fire_pressed;	// time from the last time the fire button was pressed
 	float fire_time_interval = .1f;
 
-	int gear = 1; // 0 = lowest speed, 4 = highest
+	int gear = 1; // 0 = lowest speed, 2 = highest
 	float speed = 16;
 
 	bool prevKeyRight = false;
@@ -41,7 +44,7 @@ class PlayerBehaviourComponent : public Component
 public:
 	virtual ~PlayerBehaviourComponent() {}
 
-	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, ObjectPool<Lightwall>* lightwall_pool);
+	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects);
 	virtual void Init();
 	virtual void Update(float dt);
 
@@ -51,6 +54,7 @@ public:
 	void ChangeSpeed(int change);
 
 	float getCurrentDirection();
+	float getPrevDirection();
 	int getGear();
 
 
@@ -85,3 +89,6 @@ public:
 	void RemoveLife();
 
 };
+
+
+

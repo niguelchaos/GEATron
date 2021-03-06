@@ -35,3 +35,7 @@ public:
 	virtual void Init(double xPos, double yPos, int direction);
 	virtual void Receive(Message m);
 };
+
+
+
+

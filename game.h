@@ -8,17 +8,20 @@ class Game : public GameObject
 	
 	AvancezLib* engine;
 
-	ObjectPool<Rocket> rockets_pool;	// used to instantiate rockets
-	ObjectPool<Bomb> bombs_pool;
-	ObjectPool<Lightwall> player_lightwall_pool;
+	//ObjectPool<Rocket> rockets_pool;	// used to instantiate rockets
+	//ObjectPool<Bomb> bombs_pool;
+	//ObjectPool<Lightwall> player_lightwall_pool;
 	std::vector<Player*> player_pool;
+	//std::vector<Player> player_cells_check;
 
 	Player * player;
 	
-	ObjectPool<Alien> enemies;
-	Grid * enemies_grid;
+	//ObjectPool<Alien> enemies;
+	//Grid * enemies_grid;
 
+	GameObject* window;
 	UniGrid* uniformGrid;
+	WallController* wallController;
 
 	Sprite * life_sprite;
 	bool game_over = false;
@@ -48,55 +51,11 @@ public:
 		this->engine = engine;
 		uniformGrid = new UniGrid();
 		prevTime = engine->getElapsedTime();
-		
 
-		bombs_pool.Create(50);
-		for (auto bomb = bombs_pool.pool.begin(); bomb != bombs_pool.pool.end(); bomb++)
-		{
-			BombBehaviourComponent* bomb_behaviour = new BombBehaviourComponent();
-			bomb_behaviour->Create(engine, *bomb, &game_objects);
-			RenderComponent* bomb_render = new RenderComponent();
-			bomb_render->Create(engine, *bomb, &game_objects, "data/bomb.bmp");
-			(*bomb)->Create();
-			(*bomb)->AddComponent(bomb_behaviour);
-			(*bomb)->AddComponent(bomb_render);
-		}
-
-		rockets_pool.Create(30);
-		for (auto rocket = rockets_pool.pool.begin(); rocket != rockets_pool.pool.end(); rocket++)
-		{
-			RocketBehaviourComponent* behaviour = new RocketBehaviourComponent();
-			behaviour->Create(engine, *rocket, &game_objects);
-			RenderComponent* render = new RenderComponent();
-			render->Create(engine, *rocket, &game_objects, "data/rocket.bmp");
-			(*rocket)->Create();
-			(*rocket)->AddComponent(behaviour);
-			(*rocket)->AddComponent(render);
-		}
-
-
-
-
-		player_lightwall_pool.Create(600);
-		for (auto lightwall = player_lightwall_pool.pool.begin(); lightwall != player_lightwall_pool.pool.end(); lightwall++)
-		{
-			LightwallBehaviourComponent* player_lightwall_behaviour = new LightwallBehaviourComponent();
-			player_lightwall_behaviour->Create(engine, *lightwall, &game_objects);
-
-			std::vector<const char*> player_lightwallSpriteNames;
-			player_lightwallSpriteNames.push_back("data/VertLightwallPlayer.bmp");
-			player_lightwallSpriteNames.push_back("data/HorizLightwallPlayer.bmp");
-
-			LightwallRenderComponent* player_lightwall_render = new LightwallRenderComponent();
-			player_lightwall_render->Create(engine, *lightwall, &game_objects, player_lightwallSpriteNames);
-			(*lightwall)->Create();
-			(*lightwall)->AddComponent(player_lightwall_behaviour);
-			(*lightwall)->AddComponent(player_lightwall_render);
-		}
 
 		player = new Player();
 		PlayerBehaviourComponent* player_behaviour = new PlayerBehaviourComponent();
-		player_behaviour->Create(engine, player, &game_objects, &player_lightwall_pool);
+		player_behaviour->Create(engine, player, &game_objects);
 
 		std::vector<const char*> playerSpriteNames;
 		playerSpriteNames.push_back("data/UpPlayer.bmp");
@@ -108,25 +67,39 @@ public:
 		//std::cout << "playerspritenames address" << &playerSpriteNames << std::endl;
 		player_render->Create(engine, player, &game_objects, playerSpriteNames, player_behaviour);
 
+		//WallControllerComponent* player_wallcontroller = new WallControllerComponent();
+		//player_wallcontroller->Create(engine, player, &game_objects, uniformGrid);
+
+		wallController = new WallController();
+		wallController->Create(engine, player, &game_objects, uniformGrid); 
+
 		// Collision
-		CollideComponent* player_collide = new CollideComponent();
-		player_collide->Create(engine, player, &game_objects, (ObjectPool<GameObject>*)& bombs_pool);
+		//CollideComponent* player_collide = new CollideComponent();
+		//player_collide->Create(engine, player, &game_objects, (ObjectPool<GameObject>*)& bombs_pool);
 
 		player->Create();
 		player->AddComponent(player_behaviour);
+		//player->AddComponent(player_wallcontroller);
 		player->AddComponent(player_render);
-		player->AddComponent(player_collide);
+		//player->AddComponent(player_collide);
 		player->AddReceiver(this);
+
 		game_objects.insert(player);
 
-		//std::cout << player << std::endl;
+		std::cout << player << std::endl;
 
 		player_pool.push_back(player);
 
+		window = new GameObject();
+		window->Create();
+		BoxCollideComponent* windowCollider = new BoxCollideComponent();
+		windowCollider->Create(engine, window, &game_objects, reinterpret_cast<ObjectPool<GameObject>*>(&player_pool), engine->getWidth(), engine->getHeight(), uniformGrid);
+		window->AddComponent(windowCollider);
+		game_objects.insert(window);
 
-		life_sprite = engine->createSprite("data/player.bmp");
+		//life_sprite = engine->createSprite("data/player.bmp");
 
-		int totalEnemies = 55;
+		//int totalEnemies = 55;
 
 		//put all aliens into an array
 		//for (int i = 0; i < totalEnemies; i++) {
@@ -161,7 +134,7 @@ public:
 		//enemies_grid->AddReceiver(this);
 		//game_objects.insert(enemies_grid);
 
-		game_objects.insert(player);
+		//game_objects.insert(player);
 
 	}
 
@@ -169,13 +142,15 @@ public:
 	virtual void Init()
 	{
 		player->Init();
-		uniformGrid->Init(8, reinterpret_cast<std::vector<GameObject*>*>(&player_pool), reinterpret_cast<ObjectPool<GameObject>*>(&rockets_pool), 512, 480);
+		uniformGrid->Init(8, reinterpret_cast<std::vector<GameObject*>*>(&player_pool), 512, 544);
+		
 		//enemies_grid->Init();
 		enabled = true;
 	}
 
 	virtual void Update(float dt)
 	{
+		engine->drawImage("data/phoseh.png");
 		AvancezLib::KeyStatus keys;
 
 		startFrameTime = engine->getElapsedTime();
@@ -199,38 +174,38 @@ public:
 		}
 
 		uniformGrid->Update(dt);
-		
+		wallController->Update(dt);
+
+		//std::cout << "go size: " << game_objects.size() << std::endl;
 		for (auto go = game_objects.begin(); go != game_objects.end(); go++)
 			(*go)->Update(dt);
 		
 
 		 //draw each of the cells, aka grid
-		for (int i = 0; i < uniformGrid->grid.size(); i++) {
-			for (int j = 0; j < uniformGrid->grid[i].size(); j++) {
-				if (uniformGrid->grid[i][j].state == 1) {
-					//std::cout << "state: " << uniformGrid->grid[i][j].state << std::endl;
-					engine->drawCell(uniformGrid->grid[i][j].minPos, uniformGrid->grid[i][j].maxPos);
-				}
-				
-				
-			}
-		}
+		//for (int i = 0; i < uniformGrid->grid.size(); i++) {
+		//	for (int j = 0; j < uniformGrid->grid[i].size(); j++) {
+		//		if (uniformGrid->grid[i][j].state == EMPTY) {
+		//			//std::cout << "state: " << uniformGrid->grid[i][j].state << std::endl;
+		//			engine->drawCell(uniformGrid->grid[i][j].minPos, uniformGrid->grid[i][j].maxPos);
+		//		}
+		//	}
+		//}
 	
 
 		// check if aliens are alive - goes through all
-		aliens_alive = false;
-		for (auto alien = enemies.pool.begin(); alien != enemies.pool.end(); alien++)
-		{
-			if ((*alien)->enabled == true) {
-				aliens_alive = true;
+		//aliens_alive = false;
+		//for (auto alien = enemies.pool.begin(); alien != enemies.pool.end(); alien++)
+		//{
+		//	if ((*alien)->enabled == true) {
+		//		aliens_alive = true;
 
-				// also check if any enemy is at bottom of screen
-				if ((*alien)->verticalPosition >= 480 - 32) {
-					game_over = true;
-					player->lives = -1;
-				}
-			}
-		}
+		//		// also check if any enemy is at bottom of screen
+		//		if ((*alien)->verticalPosition >= 480 - 32) {
+		//			game_over = true;
+		//			player->lives = -1;
+		//		}
+		//	}
+		//}
 		// level won if none alive
 		if (aliens_alive == false) {
 			//game_won = true;
@@ -257,7 +232,8 @@ public:
 		if (game_over == true) {
 			showGameover();
 		}
-		//showInterface();
+		
+		showInterface();
 		engine->swapBuffers();
 		engine->clearWindow();
 	}
@@ -286,7 +262,7 @@ public:
 		for (auto go = game_objects.begin(); go != game_objects.end(); go++)
 			(*go)->Destroy();
 
-		life_sprite->destroy();
+		//life_sprite->destroy();
 	
 		//rockets_pool.Destroy();
 		//bombs_pool.Destroy();
@@ -307,23 +283,36 @@ public:
 		engine->drawText(levelwonXpos, levelwonYpos, levelwonChar);
 	}
 	void showInterface() {
-		int livesXpos = 40; 	int livesYpos = 25;
-		int scoreXpos = 480; 	int scoreYpos = 25;
-		int timeXpos = 200; 	int timeYpos = 25;
 
-		std::string livesString = "LIVES LEFT = ";
-		livesString.append(std::to_string(player->lives));
-		const char* livesChar = livesString.c_str();
-		engine->drawText(livesXpos, livesYpos, livesChar);
+		Vector2D headerMin = Vector2D(0, 0);
+		Vector2D headerMax = Vector2D(512, 64);
+		engine->fillRect(headerMin, headerMax, 150, 100, 200);
+
+		int livesXpos = 40; 	int livesYpos = 25;
+		int scoreXpos = 50; 	int scoreYpos = 25;
+		int timeXpos = 200; 	int timeYpos = 25;
+		//int headerXminpos = 0;	int headerYminpos = 0;
+		//int headerXmaxpos = 64;	int headerYmaxpos = 64;
+
+		//std::string livesString = "LIVES LEFT = ";
+		//livesString.append(std::to_string(player->lives));
+		//const char* livesChar = livesString.c_str();
+		//engine->drawText(livesXpos, livesYpos, livesChar);
 
 		std::string scoreString = "SCORE: ";
 		scoreString.append(std::to_string(score));
 		const char* scoreChar = scoreString.c_str();
 		engine->drawText(scoreXpos, scoreYpos, scoreChar);
 
-		std::string timeString = "TIME MULTIPLIER: ";
+		std::string timeString = "HISCORE: ";
 		timeString.append(std::to_string(game_speed));
 		const char* timeChar = timeString.c_str();
 		engine->drawText(timeXpos, timeYpos, timeChar);
+
+
 	}
+	void drawBackground() {
+		
+	}
+
 };

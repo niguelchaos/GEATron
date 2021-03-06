@@ -59,3 +59,75 @@ void CollideComponent::Update(float dt)
 		}
 	}
 }
+
+void BoxCollideComponent::Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, ObjectPool<GameObject>* coll_objects, int x, int y, UniGrid* uniGrid) {
+	Component::Create(engine, go, game_objects);
+	this->coll_objects = coll_objects;
+	this->x = x;
+	this->y = y;
+}
+
+void BoxCollideComponent::Update(double dt)
+{
+	int ballRadius = 16;
+	int ballBorder = 3;
+	// take game objects x
+	//BoxCollideComponent* boxCollider = go->GetComponent<BoxCollideComponent*>();
+
+	//If we are using a uniform grid, instead query the grid. The grid should then return a number of potential ball objects that we then check for collisions with.
+	//for (auto i = 0; i < coll_objects->pool.size(); i++)
+	//{
+	//	GameObject* go0 = coll_objects->pool[i];
+
+	//	if (go0->enabled)
+	//	{
+	//		CircleCollideComponent* otherCollider = go0->GetComponent<CircleCollideComponent*>();
+	//		if (otherCollider != nullptr) { //if the other GameObject doesn't have a CircleColliderComponent we shouldn't go in here...
+
+	//			//Write your solution here...
+	//			//Vector2D goTogo0 = go0->position - go->position;
+	//			Vector2D goTogo0 = go0->position;
+	//			// absolute distance between two game objects = |vec(x,y)| = sqrt( x ^ 2 + y ^2)
+	//			float distanceBetweenCircleCenters = sqrt(pow(goTogo0.x, 2) + pow(goTogo0.y, 2));
+	//			//float outsideBoxDistance = x + otherCollider->;
+	//			bool intersection = false;
+	//			//float distanceBetweenCircleCenters = 1;
+	//			//bool outsideBoxCheck = go0->position.x + 
+
+	//			if (go0->position.x < -3 || go0->position.x > boxCollider->x - 29 ||
+	//				go0->position.y < -3 || go0->position.y > boxCollider->y - 29) {
+	//				intersection = true;
+	//			}
+
+	//			if (intersection) {
+	//				//RigidBodyComponent* rigidBodyComponent = go->GetComponent<RigidBodyComponent*>();
+	//				RigidBodyComponent* rigidBodyComponent0 = go0->GetComponent<RigidBodyComponent*>();
+
+	//				// normalized position
+	//				Vector2D goTogo0Normalized = goTogo0 / distanceBetweenCircleCenters;
+	//				//double dotProduct = rigidBodyComponent->velocity.dotProduct(goTogo0Normalized);
+	//				//double dotProduct0 = rigidBodyComponent0->velocity.dotProduct(goTogo0Normalized);
+	//				//double dotProduct0 = rigidBodyComponent0->velocity
+
+	//				//rigidBodyComponent->velocity = goTogo0Normalized * dotProduct0;
+	//				if (go0->position.x < (0 - ballBorder)) {
+	//					rigidBodyComponent0->velocity = rigidBodyComponent0->velocity * Vector2D(-1, 1);
+	//					go0->position.x = (0 - ballBorder);
+	//				}
+	//				if (go0->position.x > boxCollider->x - (32 - ballBorder)) {
+	//					rigidBodyComponent0->velocity = rigidBodyComponent0->velocity * Vector2D(-1, 1);
+	//					go0->position.x = boxCollider->x - (32 - ballBorder);
+	//				}
+	//				if (go0->position.y < (0 - ballBorder)) {
+	//					rigidBodyComponent0->velocity = rigidBodyComponent0->velocity * Vector2D(1, -1);
+	//					go0->position.y = (0 - ballBorder);
+	//				}
+	//				if (go0->position.y > boxCollider->y - (32 - ballBorder)) {
+	//					rigidBodyComponent0->velocity = rigidBodyComponent0->velocity * Vector2D(1, -1);
+	//					go0->position.y = boxCollider->y - (32 - ballBorder);
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
+}

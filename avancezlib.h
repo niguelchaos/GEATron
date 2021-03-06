@@ -2,6 +2,7 @@
 
 #include "SDL.h"
 #include "SDL_ttf.h"
+#include "SDL_image.h"
 #include "vector2D.h"
 class Sprite
 {
@@ -24,6 +25,8 @@ public:
 
 class AvancezLib
 {
+	int width;
+	int height;
 public:
 	// Destroys the avancez library instance
 	void destroy();
@@ -51,8 +54,15 @@ public:
 	void drawText(int x, int y, const char* msg);
 	//draws grid cell
 	void AvancezLib::drawCell(Vector2D minPos, Vector2D maxPos);
+	void AvancezLib::fillRect(Vector2D minPos, Vector2D maxPos, int r, int g, int b);
+
+	// loads and draws image
+	void drawImage(const char* path);
 	// Return the total time spent in the game, in seconds.
 	float getElapsedTime();
+
+	int getWidth();
+	int getHeight();
 
 	struct KeyStatus
 	{

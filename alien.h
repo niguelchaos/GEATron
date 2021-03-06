@@ -35,10 +35,10 @@ public:
 			}
 
 		}
-		if (m == STEPDOWN) {
-			//SDL_Log("Alien::Stepdown");
-			verticalPosition += ALIEN_DOWN_SPEED;
-		}
+		//if (m == STEPDOWN) {
+		//	//SDL_Log("Alien::Stepdown");
+		//	verticalPosition += ALIEN_DOWN_SPEED;
+		//}
 	}
 
 	void RemoveLife()

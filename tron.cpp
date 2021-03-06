@@ -31,11 +31,13 @@ float game_speed = 1.f;		// speed of the game; it is increased each time all the
 #include "component.h"
 #include "game_object.h"
 
-#include "unigrid.h"
+
 #include "rocket.h"
 #include "lightwall.h"
 
+#include "unigrid.h"
 #include "player.h"
+#include "wallcontroller.h"
 
 
 
@@ -58,7 +60,7 @@ int main(int argc, char** argv)
 
 	AvancezLib engine;
 
-	engine.init(512, 480);
+	engine.init(512, 544);
 	//engine.init(1024, 960);
 
 	Game game;

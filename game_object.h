@@ -5,7 +5,8 @@
 #include <set>
 #include <string>
 
-enum Message { HIT, ALIEN_HIT, GAME_OVER, LEVEL_WIN, NO_MSG, QUIT, STEPDOWN };
+enum Message { HIT, ALIEN_HIT, GAME_OVER, LEVEL_WIN, NO_MSG, QUIT, EDGECRASH, WALLCRASH };
+enum DirectionState { EMPTY = 0,  VERTICAL = 1, HORIZONTAL = 2, TOPLEFT = 3, TOPRIGHT = 4, BOTRIGHT = 5, BOTLEFT = 6};
 
 class Component;
 

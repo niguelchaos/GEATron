@@ -16,6 +16,8 @@ bool AvancezLib::init(int width, int height)
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL failed the initialization: %s\n", SDL_GetError());
 		return false;
 	}
+	IMG_Init(IMG_INIT_JPG);
+	IMG_Init(IMG_INIT_PNG);
 
 	//Create window
 	window = SDL_CreateWindow("aVANCEZ", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
@@ -45,6 +47,9 @@ bool AvancezLib::init(int width, int height)
 	key.fire = false;	key.left = false;	key.right = false, key.esc = false;
 	key.up = false;		key.down = false;
 
+	this->width = width;
+	this->height = height;
+
 	//Initialize renderer color
 	SDL_SetRenderDrawColor(renderer, 0, 0, 109, 0xFF);
 
@@ -68,6 +73,7 @@ void AvancezLib::destroy()
 
 	TTF_Quit();
 	SDL_Quit();
+	IMG_Quit();
 }
 
 void AvancezLib::quit() {
@@ -189,6 +195,26 @@ void AvancezLib::drawText(int x, int y, const char * msg)
 	SDL_DestroyTexture(msg_texture);
 	SDL_FreeSurface(surf);
 }
+void AvancezLib::drawImage(const char* path)
+{
+	SDL_Surface* surf = IMG_Load(path);
+	if (surf == NULL)
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to load image %s! SDL_image Error: %s\n", path, SDL_GetError());
+	}
+
+	//Create texture from surface pixels
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surf);
+	if (texture == NULL)
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create texture from %s! SDL Error: %s\n", path, SDL_GetError());
+	}
+
+	SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+	//Get rid of old loaded surface
+	SDL_FreeSurface(surf);
+}
 
 void AvancezLib::drawCell(Vector2D minPos, Vector2D maxPos) {
 
@@ -199,13 +225,27 @@ void AvancezLib::drawCell(Vector2D minPos, Vector2D maxPos) {
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
 	SDL_RenderDrawRect(renderer, &rect);
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+}
+\
+void AvancezLib::fillRect(Vector2D minPos, Vector2D maxPos, int r, int g, int b) {
+	SDL_Rect rect{};
+	rect = { (int)minPos.x, (int)minPos.y, (int)(maxPos.x - minPos.x), (int)(maxPos.y - minPos.y) };
 
-
+	SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+	SDL_RenderFillRect(renderer, &rect);
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 }
 
 float AvancezLib::getElapsedTime()
 {
 	return SDL_GetTicks() / 1000.f;
+}
+
+int AvancezLib::getHeight() {
+	return height;
+}
+int AvancezLib::getWidth() {
+	return width;
 }
 
 void AvancezLib::getKeyStatus(KeyStatus & keys)

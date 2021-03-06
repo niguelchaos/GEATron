@@ -1,7 +1,7 @@
 #include "player.h"
 #include "lightwall.h"
 
-void PlayerBehaviourComponent::Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, ObjectPool<Lightwall>* lightwall_pool)
+void PlayerBehaviourComponent::Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects)
 {
 	Component::Create(engine, go, game_objects);
 	this->lightwall_pool = lightwall_pool;
@@ -10,7 +10,7 @@ void PlayerBehaviourComponent::Create(AvancezLib* engine, GameObject* go, std::s
 void PlayerBehaviourComponent::Init()
 {
 	go->horizontalPosition = 320;
-	go->verticalPosition = 472 - 8;
+	go->verticalPosition = 544 - 8;
 	prevPosX = go->horizontalPosition;
 	prevPosY = go->verticalPosition;
 
@@ -22,8 +22,9 @@ void PlayerBehaviourComponent::Update(float dt)
 {
 	AvancezLib::KeyStatus keys;
 	int windowX = 512;
-	int windowY = 480;
+	int windowY = 544;
 	int spriteWidth = 16;
+	int header = 64;
 	int border = 8;
 	timer += dt;
 
@@ -34,14 +35,22 @@ void PlayerBehaviourComponent::Update(float dt)
 		if (currentDirection == 2) { go->verticalPosition += speed; }
 		if (currentDirection == 3) { go->horizontalPosition += -speed; }
 
+
 		//go->verticalPosition = floor(go->verticalPosition);
 		//go->horizontalPosition = floor(go->horizontalPosition);
+		//if (prevDirection != currentDirection) {
+			//std::cout << "waw" << std::endl;
 
-		if (go->horizontalPosition > (windowX - spriteWidth)) { go->horizontalPosition = windowX - spriteWidth; }
-		if (go->horizontalPosition < border) { go->horizontalPosition = border; }
-		if (go->verticalPosition > (windowY - spriteWidth)) { go->verticalPosition = windowY - spriteWidth; }
-		if (go->verticalPosition < border) { go->verticalPosition = border; }
-
+		//}
+		// LIMITS FOR PLAYER TO STAY IN FRAME
+		if (go->horizontalPosition > (windowX - (spriteWidth - border) )) { go->horizontalPosition = windowX - (spriteWidth - border); }
+		if (go->horizontalPosition < 0 ) { go->horizontalPosition = 0; }
+		if (go->verticalPosition > (windowY - header - (spriteWidth - border))) { go->verticalPosition = windowY - (spriteWidth - border) - header; }
+		if (go->verticalPosition < 0) { go->verticalPosition = 0; }
+		
+		prevDirection = currentDirection;
+		prevPosX = go->horizontalPosition;
+		prevPosY = go->verticalPosition;
 		//std::cout << "current Pos = " << go->verticalPosition << " -- " << go->horizontalPosition << std::endl;
 
 		engine->getKeyStatus(keys);
@@ -76,45 +85,44 @@ void PlayerBehaviourComponent::Update(float dt)
 		if (!keys.up) { prevKeyUp = keys.up; }
 		if (!keys.down) { prevKeyDown = keys.down; }
 
-		Lightwall* lightwall = lightwall_pool->FirstAvailable();
-		int centerOffset = 14;
-		int sideOffset = 8;
-		int heightOffset = 8;
+		
+		//Lightwall* lightwall = lightwall_pool->FirstAvailable();
+		//int centerOffset = 14;
+		//int sideOffset = 8;
+		//int heightOffset = 8; 
 
-		int wallWidth = 4;
-		int wallHeight = 8;
+		//int wallWidth = 4;
+		//int wallHeight = 8;
 
-		if (go->horizontalPosition != prevPosX || go->verticalPosition != prevPosY) {
-			if (lightwall != NULL)	// wall is NULL is the object pool can not provide an object
-			{
-				if (currentDirection == 0) {
-					lightwall->Init(go->horizontalPosition + 2, go->verticalPosition, currentDirection);
-					//lightwall->Init(go->horizontalPosition + centerOffset, go->verticalPosition + heightOffset, currentDirection);
-				}
-				if (currentDirection == 1) {
-					lightwall->Init(go->horizontalPosition, go->verticalPosition + 2, currentDirection);
-					//lightwall->Init(go->horizontalPosition + heightOffset + heightOffset, go->verticalPosition + centerOffset, currentDirection);
-				}
-				if (currentDirection == 2) {
-					lightwall->Init(go->horizontalPosition + 2, go->verticalPosition, currentDirection);
-					//lightwall->Init(go->horizontalPosition + centerOffset, go->verticalPosition + heightOffset + heightOffset, currentDirection);
-				}
-				if (currentDirection == 3) {
-					lightwall->Init(go->horizontalPosition, go->verticalPosition + 2, currentDirection);
-					//lightwall->Init(go->horizontalPosition + sideOffset, go->verticalPosition + centerOffset, currentDirection);
-				}
-				
+		//if (go->horizontalPosition != prevPosX || go->verticalPosition != prevPosY) {
+		//	if (lightwall != NULL)	// wall is NULL is the object pool can not provide an object
+		//	{
+		//		if (currentDirection == 0) {
+		//			lightwall->Init(go->horizontalPosition + 2, go->verticalPosition, currentDirection);
+		//			//lightwall->Init(go->horizontalPosition + centerOffset, go->verticalPosition + heightOffset, currentDirection);
+		//		}
+		//		if (currentDirection == 1) {
+		//			lightwall->Init(go->horizontalPosition, go->verticalPosition + 2, currentDirection);
+		//			//lightwall->Init(go->horizontalPosition + heightOffset + heightOffset, go->verticalPosition + centerOffset, currentDirection);
+		//		}
+		//		if (currentDirection == 2) {
+		//			lightwall->Init(go->horizontalPosition + 2, go->verticalPosition, currentDirection);
+		//			//lightwall->Init(go->horizontalPosition + centerOffset, go->verticalPosition + heightOffset + heightOffset, currentDirection);
+		//		}
+		//		if (currentDirection == 3) {
+		//			lightwall->Init(go->horizontalPosition, go->verticalPosition + 2, currentDirection);
+		//			//lightwall->Init(go->horizontalPosition + sideOffset, go->verticalPosition + centerOffset, currentDirection);
+		//		}
+		//		
 
-				game_objects->insert(lightwall);
-			}
+		//		game_objects->insert(lightwall);
+		//	}
 
 			timer = 0;
-			prevDirection = currentDirection;
-			prevPosX = go->horizontalPosition;
-			prevPosY = go->verticalPosition;
+
+		//}
 		}
-		}
-		
+
 	//if (keys.fire)
 	//{
 	//	if (CanFire())
@@ -180,6 +188,10 @@ float PlayerBehaviourComponent::getCurrentDirection() {
 	return currentDirection;
 }
 
+float PlayerBehaviourComponent::getPrevDirection() {
+	return prevDirection;
+}
+
 void PlayerRenderComponent::Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, std::vector<const char*> sprite_names, PlayerBehaviourComponent* playerBehaviourRef)
 {
 	Component::Create(engine, go, game_objects);
@@ -199,18 +211,21 @@ void PlayerRenderComponent::Update(float dt)
 		return;
 	}
 	int offset = 3;
+	int lateralOffset = 16;
+	int header = 64; 
+
 	if (playerBehaviourRef->getCurrentDirection() == 0) {
 		//std::cout << "showing going up" << std::endl;
-		sprites[0]->draw(int(go->horizontalPosition - offset), int(go->verticalPosition));
+		sprites[0]->draw(int(go->horizontalPosition - offset), int(go->verticalPosition - lateralOffset + header));
 	}
 	if (playerBehaviourRef->getCurrentDirection() == 1) {
-		sprites[1]->draw(int(go->horizontalPosition), int(go->verticalPosition - offset));
+		sprites[1]->draw(int(go->horizontalPosition), int(go->verticalPosition - offset + header));
 	}
 	if (playerBehaviourRef->getCurrentDirection() == 2) {
-		sprites[2]->draw(int(go->horizontalPosition - offset), int(go->verticalPosition));
+		sprites[2]->draw(int(go->horizontalPosition - offset), int(go->verticalPosition + header));
 	}
 	if (playerBehaviourRef->getCurrentDirection() == 3) {
-		sprites[3]->draw(int(go->horizontalPosition), int(go->verticalPosition - offset));
+		sprites[3]->draw(int(go->horizontalPosition - lateralOffset), int(go->verticalPosition - offset + header));
 	}
 		
 }
@@ -228,7 +243,7 @@ void Player::Init()
 {
 	SDL_Log("Player::Init");
 	GameObject::Init();
-	lives = 2;
+	lives = 0;
 	id = "player";
 }
 
@@ -237,6 +252,15 @@ void Player::Receive(Message m)
 	if (m == HIT)
 	{
 		SDL_Log("Player::Hit!");
+		//RemoveLife();
+
+		//if (lives < 0) {
+		//	SDL_Log("Player::REKT");
+		//	Send(GAME_OVER);
+		//}
+	}
+	if (m == WALLCRASH) {
+		//SDL_Log("Player::CRASH!");
 		RemoveLife();
 
 		if (lives < 0) {
@@ -251,3 +275,4 @@ void Player::RemoveLife()
 	lives--;
 	SDL_Log("remaining lives %d", lives);
 }
+

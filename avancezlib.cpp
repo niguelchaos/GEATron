@@ -113,6 +113,19 @@ void AvancezLib::processInput()
 				key.down = true;
 				//std::cout << "				DOWN DETECTED" << std::endl;
 				break;
+
+			case SDLK_w:
+				key.w = true;
+				break;
+			case SDLK_a:
+				key.a = true;
+				break;
+			case SDLK_s:
+				key.s = true;
+				break;
+			case SDLK_d:
+				key.d = true;
+				break;
 			}
 		}
 
@@ -134,6 +147,19 @@ void AvancezLib::processInput()
 				break;
 			case SDLK_DOWN:
 				key.down = false;
+				break;
+
+			case SDLK_w:
+				key.w = false;
+				break;
+			case SDLK_a:
+				key.a = false;
+				break;
+			case SDLK_s:
+				key.s = false;
+				break;
+			case SDLK_d:
+				key.d = false;
 				break;
 			}
 		}
@@ -195,8 +221,13 @@ void AvancezLib::drawText(int x, int y, const char * msg)
 	SDL_DestroyTexture(msg_texture);
 	SDL_FreeSurface(surf);
 }
-void AvancezLib::drawImage(const char* path)
+void AvancezLib::drawImage(const char* path, int minX, int minY, int maxX, int maxY)
 {
+	SDL_Rect rect;
+	rect.x = minX;
+	rect.y = minY;
+	rect.w = maxX;
+	rect.h = maxY;
 	SDL_Surface* surf = IMG_Load(path);
 	if (surf == NULL)
 	{
@@ -210,7 +241,7 @@ void AvancezLib::drawImage(const char* path)
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create texture from %s! SDL Error: %s\n", path, SDL_GetError());
 	}
 
-	SDL_RenderCopy(renderer, texture, NULL, NULL);
+	SDL_RenderCopy(renderer, texture, NULL, &rect);
 
 	//Get rid of old loaded surface
 	SDL_FreeSurface(surf);
@@ -256,6 +287,11 @@ void AvancezLib::getKeyStatus(KeyStatus & keys)
 	keys.up = key.up;
 	keys.down = key.down;
 	keys.esc = key.esc;
+
+	keys.w = key.w;
+	keys.a = key.a;
+	keys.s = key.s;
+	keys.d = key.d;
 	 
 }
 

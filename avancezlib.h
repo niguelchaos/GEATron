@@ -57,7 +57,7 @@ public:
 	void AvancezLib::fillRect(Vector2D minPos, Vector2D maxPos, int r, int g, int b);
 
 	// loads and draws image
-	void drawImage(const char* path);
+	void drawImage(const char* path, int minX, int minY, int maxX, int maxY);
 	// Return the total time spent in the game, in seconds.
 	float getElapsedTime();
 
@@ -72,6 +72,12 @@ public:
 		bool up; // up arrow
 		bool down; // down arrow
 		bool esc; // escape button
+
+		bool a; // left arrow
+		bool d; // right arrow
+		bool w; // up arrow
+		bool s; // down arrow
+
 	};
 
 	// Returns the keyboard status. If a flag is set, the corresponding key is being held down.

@@ -15,7 +15,8 @@ class Game : public GameObject
 	std::vector<Player*> player_cells_check;
 
 	Player * player;
-	
+	Player* player2;
+	int winner = 0;
 	//ObjectPool<Alien> enemies;
 	//Grid * enemies_grid;
 
@@ -55,9 +56,14 @@ public:
 		prevTime = engine->getElapsedTime();
 
 
+		///////////////////////// wallcontroller /////////////////////////
+		wallController = new WallController();
+		wallController->Create(engine, &game_objects, uniformGrid);
+
+		/////////////////////////////////// player 1 /////////////////////////////////////
 		player = new Player();
 		PlayerBehaviourComponent* player_behaviour = new PlayerBehaviourComponent();
-		player_behaviour->Create(engine, player, &game_objects);
+		player_behaviour->Create(engine, player, &game_objects, 1);
 
 		std::vector<const char*> playerSpriteNames;
 		playerSpriteNames.push_back("data/UpPlayer.bmp");
@@ -76,8 +82,7 @@ public:
 		//WallControllerComponent* player_wallcontroller = new WallControllerComponent();
 		//player_wallcontroller->Create(engine, player, &game_objects, uniformGrid);
 
-		wallController = new WallController();
-		wallController->Create(engine, player, &game_objects, uniformGrid); 
+
 
 		// Bike Collision Component
 		BoxCollideComponent* player_collide = new BoxCollideComponent();
@@ -95,6 +100,49 @@ public:
 		std::cout << player << std::endl;
 
 		player_pool.push_back(player);
+
+		//////////////////////////////////// player 2 ////////////////////////////////////
+		player2 = new Player();
+		PlayerBehaviourComponent* player2_behaviour = new PlayerBehaviourComponent();
+		player2_behaviour->Create(engine, player2, &game_objects, 2);
+
+		std::vector<const char*> player2SpriteNames;
+		player2SpriteNames.push_back("data/UpEnemy.bmp");
+		player2SpriteNames.push_back("data/RightEnemy.bmp");
+		player2SpriteNames.push_back("data/DownEnemy.bmp");
+		player2SpriteNames.push_back("data/LeftEnemy.bmp");
+		player2SpriteNames.push_back("data/Explosion1.bmp");
+		player2SpriteNames.push_back("data/Explosion2.bmp");
+		player2SpriteNames.push_back("data/Explosion3.bmp");
+		player2SpriteNames.push_back("data/Explosion4.bmp");
+
+		PlayerRenderComponent* player2_render = new PlayerRenderComponent();
+		//std::cout << "playerspritenames address" << &playerSpriteNames << std::endl;
+		player2_render->Create(engine, player2, &game_objects, player2SpriteNames, player2_behaviour);
+
+		//WallControllerComponent* player_wallcontroller = new WallControllerComponent();
+		//player_wallcontroller->Create(engine, player, &game_objects, uniformGrid);
+
+		//wallController = new WallController();
+		//wallController->Create(engine, player, &game_objects, uniformGrid);
+
+		// Bike Collision Component
+		BoxCollideComponent* player2_collide = new BoxCollideComponent();
+		player2_collide->Create(engine, player2, &game_objects, (std::vector<GameObject*>*) & player_cells_check, playerHitboxWidth, playerHitboxHeight, uniformGrid);
+
+		player2->Create();
+		player2->AddComponent(player2_behaviour);
+		//player2->AddComponent(player2_wallcontroller);
+		player2->AddComponent(player2_render);
+		player2->AddComponent(player2_collide);
+		player2->AddReceiver(this);
+
+		game_objects.insert(player2);
+
+		//std::cout << player2 << std::endl;
+
+		player_pool.push_back(player2);
+		////////////////////////////////////////////////////////////////////////
 
 		window = new GameObject();
 		window->Create();
@@ -148,6 +196,7 @@ public:
 	virtual void Init()
 	{
 		player->Init();
+		player2->Init();
 		uniformGrid->Init(8, reinterpret_cast<std::vector<GameObject*>*>(&player_pool), 512, 544);
 		window->Init();
 		//enemies_grid->Init();
@@ -156,7 +205,9 @@ public:
 
 	virtual void Update(float dt)
 	{
-		engine->drawImage("data/phoseh.png");
+		engine->drawImage("data/derpakko.jpg", 0, 64, 512, 480);
+		//engine->drawImage("data/ricardo.jpg", 0, 64, 512, 480);
+		//engine->drawImage("data/background.png", 0, 64, 512, 480);
 		AvancezLib::KeyStatus keys;
 
 		startFrameTime = engine->getElapsedTime();
@@ -168,6 +219,17 @@ public:
 
 		if (game_over == true) {
 			//dt = 0;
+			if (player_pool[1]->GetComponent<PlayerBehaviourComponent*>()->isRekt() == true) {
+				winner = 1;
+				player_pool[0]->GetComponent<PlayerBehaviourComponent*>()->Pause();
+			}
+			else if (player_pool[0]->GetComponent<PlayerBehaviourComponent*>()->isRekt() == true) {
+				winner = 2;
+				player_pool[1]->GetComponent<PlayerBehaviourComponent*>()->Pause();
+			}
+			else if (player_pool[0]->GetComponent<PlayerBehaviourComponent*>()->isRekt() == true && player_pool[1]->GetComponent<PlayerBehaviourComponent*>()->isRekt() == true) {
+				winner = 3;
+			}
 		}
 
 		//std::cout << timer << std::endl;
@@ -235,11 +297,12 @@ public:
 	virtual void Draw()
 	{
 		//... Draw user interface elements here
-		if (game_over == true) {
-			showGameover();
-		}
+
 		
 		showInterface();
+		if (game_over == true) {
+			showGameWon();
+		}
 		engine->swapBuffers();
 		engine->clearWindow();
 	}
@@ -250,8 +313,8 @@ public:
 		{
 			//i dont know why the hell text doesnt appear here
 			game_over = true;
-			SDL_Log("Game:: OVER");
-			SDL_Log("HOTEL:: TRIVAGO");
+			//SDL_Log("Game:: OVER");
+			//SDL_Log("HOTEL:: TRIVAGO");
 			for (int i = 0; i < player_pool.size(); i++) {
 				if (player_pool[i]->GetComponent<PlayerRenderComponent*>()->isDoneExploding() == true) {
 					std::cout << "Done exploding" << std::endl;
@@ -280,17 +343,28 @@ public:
 		//bombs_pool.Destroy();
 		//enemies.Destroy();
 		//enemies_grid->Destroy();
+		
 		delete player;
+		delete player2;
 	}
 	void showGameover() {
-		int gameoverXpos = 260; 	int gameoverYpos = 100;
+		int gameoverXpos = 220; 	int gameoverYpos = 32;
 		std::string gameoverString = "=== GAME OVER ===";
 		const char* gameoverChar = gameoverString.c_str();
 		engine->drawText(gameoverXpos, gameoverYpos, gameoverChar);
 	}
 	void showGameWon() {
-		int levelwonXpos = 260; 	int levelwonYpos = 200;
-		std::string levelwonString = "=== LEVEL WON! ===";
+		int levelwonXpos = 190; 	int levelwonYpos = 32;
+		std::string levelwonString;
+		if (winner == 1) {
+			levelwonString = "=== PLAYER 1 WON! ===";
+		}
+		if (winner == 2) {
+			levelwonString = "=== PLAYER 2 WON! ===";
+		}
+		if (winner == 3) {
+			levelwonString = "=== DRAW! ===";
+		}
 		const char* levelwonChar = levelwonString.c_str();
 		engine->drawText(levelwonXpos, levelwonYpos, levelwonChar);
 	}
@@ -319,7 +393,7 @@ public:
 		std::string timeString = "HISCORE: ";
 		timeString.append(std::to_string(game_speed));
 		const char* timeChar = timeString.c_str();
-		engine->drawText(timeXpos, timeYpos, timeChar);
+		//engine->drawText(timeXpos, timeYpos, timeChar);
 
 
 	}

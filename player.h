@@ -15,6 +15,7 @@ class PlayerBehaviourComponent : public Component
 	float timer = 0;
 	const float TIMER_CD = 0.05f;
 
+
 	float time_fire_pressed;	// time from the last time the fire button was pressed
 	float fire_time_interval = .1f;
 
@@ -23,15 +24,22 @@ class PlayerBehaviourComponent : public Component
 
 	bool prevKeyRight = false;
 	bool prevKeyLeft = false;
+	bool prevKeyUp = false;
+	bool prevKeyDown = false;
+
+	bool prevKeyd = false;
+	bool prevKeya = false;
+	bool prevKeyw = false;
+	bool prevKeys = false;
+
 	int currentDirection = 0; // 0 = up, 1 = right, clockwise
 	int prevDirection = 0;
 
 	int prevPosX;
 	int prevPosY;
 
-	bool prevKeyUp = false;
-	bool prevKeyDown = false;
-
+	int playerNum = 0;
+	int startX; int startY;
 
 	float time_turn_pressed;	// time from the last time the right/left button was pressed
 	float TURN_COOLDOWN = 1.f;
@@ -39,14 +47,15 @@ class PlayerBehaviourComponent : public Component
 	const int LEFT = -1;
 	const int ACCELERATE = 1;
 	const int DECELERATE = -1;
-	ObjectPool<Lightwall> * lightwall_pool;
+	//ObjectPool<Lightwall> * lightwall_pool;
 
-	bool isRekt = false;
+	
+	bool rekt = false;
 
 public:
 	virtual ~PlayerBehaviourComponent() {}
 
-	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects);
+	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, int playerNum);
 	virtual void Init();
 	virtual void Update(float dt);
 	virtual void Receive(Message m);
@@ -59,7 +68,8 @@ public:
 	float getCurrentDirection();
 	float getPrevDirection();
 	int getGear();
-
+	void Pause();
+	bool isRekt();
 
 	// return true if enough time has passed from the previous rocket
 	bool CanFire();

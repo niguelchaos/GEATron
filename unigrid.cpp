@@ -139,31 +139,6 @@ void UniGrid::Update(double dt)
 		if (maxPosX > 63) { maxPosX = 63; }
 		if (maxPosY > 67) { maxPosY = 67; }
 
-		//if (minPosX <= -1) {
-		//	minPosX = 0;
-			//std::cout << "	--minX corrected" << std::endl; 
-		//}
-		//if (minPosY <= -1) {
-		//	minPosY = 0;
-		//	//std::cout << "	--minY corrected" << std::endl; 
-		//}
-		//if (maxPosX >= 20) {
-		//	maxPosX = 19;
-		//	//std::cout << "	++maxX corrected" << std::endl; 
-		//}
-		//if (maxPosY >= 15) {
-		//	maxPosY = 14;
-		//	//std::cout << "	++maxY corrected" << std::endl; 
-		//}
-
-		//std::cout << "MIN:  " << minPosX << " , " << minPosY << " || MAX: " << maxPosX << ", " << maxPosY << std::endl;
-		//if (minPosX == 1) {
-		//	//std::cout << "min = 1  " << std::endl;
-		//}
-		//if (minPosY == 1) {
-		//	//std::cout << "min = 1  " << std::endl;
-		//}
-
 		for (int a = minPosX; a <= maxPosX; a++) {
 			for (int b = minPosY; b <= maxPosY; b++) {
 				//currentBall->GetComponent<CircleCollideComponent*>()->InsertCurrentCell(uniGrid->grid[a][b]);
@@ -245,7 +220,7 @@ void UniGrid::UpdateState(double dt)
 			//maxPosX = (currentCycle->horizontalPosition + (positionWidth)) / uniGrid->cellSize;
 			//std::cout << "	// MIN:  " << minPosX << " , " << minPosY << " || MAX: " << maxPosX << ", " << maxPosY << std::endl;
 		}
-		std::cout << "	// MIN:  " << minPosX << " , " << minPosY << " || MAX: " << maxPosX << ", " << maxPosY<< std::endl;
+		//std::cout << "	// MIN:  " << minPosX << " , " << minPosY << " || MAX: " << maxPosX << ", " << maxPosY<< std::endl;
 		// leave a border around edge as a "wall"
 		if (minPosX < 1) { minPosX = 1; }
 		if (minPosY < 9) { minPosY = 9; }
@@ -353,16 +328,16 @@ void UniGrid::CheckCollisions() {
 
 		// check for wallcrashes
 		if (currentCycle->horizontalPosition < border) {
-			//currentCycle->Receive(WALLCRASH);
+			currentCycle->Receive(WALLCRASH);
 		}
 		else if (currentCycle->horizontalPosition > windowX - border - playerWidth) {
-			//currentCycle->Receive(WALLCRASH);
+			currentCycle->Receive(WALLCRASH);
 		}
 		else if (currentCycle->verticalPosition < (header + border)) {
 			currentCycle->Receive(WALLCRASH);
 		}
-		else if (currentCycle->verticalPosition > windowY - header - (border * 2)) {
-			//currentCycle->Receive(WALLCRASH);
+		else if (currentCycle->verticalPosition > windowY -(border)) {
+			currentCycle->Receive(WALLCRASH);
 		}
 
 		if (currentCycle->enabled == false) {
@@ -398,16 +373,16 @@ void UniGrid::CheckCollisions() {
 
 		//// leave a border around edge as a "wall"
 		if (minPosX < 1) { minPosX = 1; }
-		if (minPosY < 1) { minPosY = 1; }
+		if (minPosY < 8) { minPosY = 8; }
 		if (maxPosX > 62) { maxPosX = 62; }
 		if (maxPosY > 66) { maxPosY = 66; }
 
-		std::cout << minPosX << ", " << minPosY << " Max == " << maxPosX << ", " << maxPosY << std::endl;
+		//std::cout << minPosX << ", " << minPosY << " Max == " << maxPosX << ", " << maxPosY << std::endl;
 		for (int a = minPosX; a <= maxPosX; a++) {
 			for (int b = maxPosY; b <= maxPosY; b++) {
 				if (grid[a][b].state.second != EMPTY) {
 					std::cout << "									HIT" << std::endl;
-					//currentCycle->Receive(WALLCRASH);
+					currentCycle->Receive(WALLCRASH);
 				}
 			}
 		}

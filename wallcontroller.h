@@ -16,7 +16,7 @@ class WallController {
 
 
 public:
-	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, UniGrid* unigridRef);
+	virtual void Create(AvancezLib* engine, std::set<GameObject*>* game_objects, UniGrid* unigridRef);
 	virtual void Update(float dt);
 	void drawWalls();
 };

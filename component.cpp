@@ -104,7 +104,7 @@ void BoxCollideComponent::Update(float dt)
 		minY = maxY - hitbox;
 		maxX += hitbox;
 		engine->drawCell(Vector2D(minX, minY), Vector2D(maxX, maxY));
-		std::cout << "			|| MIN:  " << minX << " , " << minY << " || MAX: " << maxX << ", " << maxY << std::endl;
+		//std::cout << "			|| MIN:  " << minX << " , " << minY << " || MAX: " << maxX << ", " << maxY << std::endl;
 	}
 	if (playerBehaviourRef->getCurrentDirection() == 1) {
 		maxX += offset + hitbox+1;
@@ -202,7 +202,7 @@ void WindowCollideComponent::Create(AvancezLib* engine, GameObject* go, std::set
 void WindowCollideComponent::Update(float dt)
 {
 	int border = 8;
-	int playerWidth= 16;
+	int playerWidth = 16;
 	int header = 64;
 	// take game objects x
 	WindowCollideComponent* windowCollider = this->go->GetComponent<WindowCollideComponent*>();

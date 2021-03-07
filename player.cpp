@@ -10,7 +10,7 @@ void PlayerBehaviourComponent::Create(AvancezLib* engine, GameObject* go, std::s
 void PlayerBehaviourComponent::Init()
 {
 	go->horizontalPosition = 320;
-	go->verticalPosition = 544 - 8;
+	go->verticalPosition = 536 - 32;
 	prevPosX = go->horizontalPosition;
 	prevPosY = go->verticalPosition;
 
@@ -28,100 +28,72 @@ void PlayerBehaviourComponent::Update(float dt)
 	int border = 8;
 	timer += dt;
 
+
+
 	if (timer > TIMER_CD) {
 
-		if (currentDirection == 0) { go->verticalPosition += -speed; }
-		if (currentDirection == 1) { go->horizontalPosition += speed; }
-		if (currentDirection == 2) { go->verticalPosition += speed; }
-		if (currentDirection == 3) { go->horizontalPosition += -speed; }
+		if (!isRekt) {
+			//go->verticalPosition = go->verticalPosition + header;
+			//go->horizontalPosition = go->horizontalPosition;
+
+			if (currentDirection == 0) { go->verticalPosition += -speed; }
+			if (currentDirection == 1) { go->horizontalPosition += speed; }
+			if (currentDirection == 2) { go->verticalPosition += speed; }
+			if (currentDirection == 3) { go->horizontalPosition += -speed; }
 
 
-		//go->verticalPosition = floor(go->verticalPosition);
-		//go->horizontalPosition = floor(go->horizontalPosition);
-		//if (prevDirection != currentDirection) {
-			//std::cout << "waw" << std::endl;
+			//go->verticalPosition = floor(go->verticalPosition);
+			//go->horizontalPosition = floor(go->horizontalPosition);
+			//if (prevDirection != currentDirection) {
+				//std::cout << "waw" << std::endl;
 
-		//}
-		// LIMITS FOR PLAYER TO STAY IN FRAME
-		if (go->horizontalPosition > (windowX - (spriteWidth - border) )) { go->horizontalPosition = windowX - (spriteWidth - border); }
-		if (go->horizontalPosition < 0 ) { go->horizontalPosition = 0; }
-		if (go->verticalPosition > (windowY - header - (spriteWidth - border))) { go->verticalPosition = windowY - (spriteWidth - border) - header; }
-		if (go->verticalPosition < 0) { go->verticalPosition = 0; }
-		
-		prevDirection = currentDirection;
-		prevPosX = go->horizontalPosition;
-		prevPosY = go->verticalPosition;
-		//std::cout << "current Pos = " << go->verticalPosition << " -- " << go->horizontalPosition << std::endl;
+			//}
+			// LIMITS FOR PLAYER TO STAY IN FRAME
+			if (go->horizontalPosition > (windowX - (spriteWidth - border))) { go->horizontalPosition = windowX - (spriteWidth - border); }
+			if (go->horizontalPosition < 0) { go->horizontalPosition = 0; }
+			if (go->verticalPosition > (windowY - (spriteWidth - border))) { go->verticalPosition = windowY - (spriteWidth - border); }
+			if (go->verticalPosition < header ) { go->verticalPosition = header; }
 
-		engine->getKeyStatus(keys);
-		if (keys.right) {
-			if (prevKeyRight == false) {
-				ChangeDirection(RIGHT);
+			prevDirection = currentDirection;
+			prevPosX = go->horizontalPosition;
+			prevPosY = go->verticalPosition;
+			//std::cout << "current Pos = " << go->verticalPosition << " -- " << go->horizontalPosition << std::endl;
+
+			engine->getKeyStatus(keys);
+			if (keys.right) {
+				if (prevKeyRight == false) {
+					ChangeDirection(RIGHT);
+				}
+				prevKeyRight = keys.right;
 			}
-			prevKeyRight = keys.right;
-		}
-		if (keys.left) {
-			if (prevKeyLeft == false) {
-				ChangeDirection(LEFT);
+			if (keys.left) {
+				if (prevKeyLeft == false) {
+					ChangeDirection(LEFT);
+				}
+				prevKeyLeft = keys.left;
 			}
-			prevKeyLeft = keys.left;
-		}
-		if (!keys.right) { prevKeyRight = keys.right; }
-		if (!keys.left) { prevKeyLeft = keys.left; }
+			if (!keys.right) { prevKeyRight = keys.right; }
+			if (!keys.left) { prevKeyLeft = keys.left; }
 
-		if (keys.up == true) {
-			if (prevKeyUp == false) {
-				ChangeSpeed(ACCELERATE);
+			if (keys.up == true) {
+				if (prevKeyUp == false) {
+					ChangeSpeed(ACCELERATE);
+				}
+				prevKeyUp = keys.up;
 			}
-			prevKeyUp = keys.up;
-		}
-		if (keys.down == true) {
-			if (prevKeyDown == false) {
-				ChangeSpeed(DECELERATE);
+			if (keys.down == true) {
+				if (prevKeyDown == false) {
+					ChangeSpeed(DECELERATE);
+				}
+				prevKeyDown = keys.down;
 			}
-			prevKeyDown = keys.down;
+
+			if (!keys.up) { prevKeyUp = keys.up; }
+			if (!keys.down) { prevKeyDown = keys.down; }
 		}
 
-		if (!keys.up) { prevKeyUp = keys.up; }
-		if (!keys.down) { prevKeyDown = keys.down; }
-
-		
-		//Lightwall* lightwall = lightwall_pool->FirstAvailable();
-		//int centerOffset = 14;
-		//int sideOffset = 8;
-		//int heightOffset = 8; 
-
-		//int wallWidth = 4;
-		//int wallHeight = 8;
-
-		//if (go->horizontalPosition != prevPosX || go->verticalPosition != prevPosY) {
-		//	if (lightwall != NULL)	// wall is NULL is the object pool can not provide an object
-		//	{
-		//		if (currentDirection == 0) {
-		//			lightwall->Init(go->horizontalPosition + 2, go->verticalPosition, currentDirection);
-		//			//lightwall->Init(go->horizontalPosition + centerOffset, go->verticalPosition + heightOffset, currentDirection);
-		//		}
-		//		if (currentDirection == 1) {
-		//			lightwall->Init(go->horizontalPosition, go->verticalPosition + 2, currentDirection);
-		//			//lightwall->Init(go->horizontalPosition + heightOffset + heightOffset, go->verticalPosition + centerOffset, currentDirection);
-		//		}
-		//		if (currentDirection == 2) {
-		//			lightwall->Init(go->horizontalPosition + 2, go->verticalPosition, currentDirection);
-		//			//lightwall->Init(go->horizontalPosition + centerOffset, go->verticalPosition + heightOffset + heightOffset, currentDirection);
-		//		}
-		//		if (currentDirection == 3) {
-		//			lightwall->Init(go->horizontalPosition, go->verticalPosition + 2, currentDirection);
-		//			//lightwall->Init(go->horizontalPosition + sideOffset, go->verticalPosition + centerOffset, currentDirection);
-		//		}
-		//		
-
-		//		game_objects->insert(lightwall);
-		//	}
-
-			timer = 0;
-
-		//}
-		}
+		timer = 0;
+	}
 
 	//if (keys.fire)
 	//{
@@ -138,6 +110,13 @@ void PlayerBehaviourComponent::Update(float dt)
 	//		}
 	//	}
 	//}
+}
+
+void PlayerBehaviourComponent::Receive(Message m)
+{
+	if (m == WALLCRASH) {
+		isRekt = true;
+	}
 }
 
 void PlayerBehaviourComponent::ChangeDirection(int direction)
@@ -213,21 +192,116 @@ void PlayerRenderComponent::Update(float dt)
 	int offset = 3;
 	int lateralOffset = 16;
 	int header = 64; 
-
+	int xPos;
+	int yPos;
 	if (playerBehaviourRef->getCurrentDirection() == 0) {
-		//std::cout << "showing going up" << std::endl;
-		sprites[0]->draw(int(go->horizontalPosition - offset), int(go->verticalPosition - lateralOffset + header));
+		xPos = int(go->horizontalPosition - offset);
+		yPos = int(go->verticalPosition - lateralOffset + header);
 	}
 	if (playerBehaviourRef->getCurrentDirection() == 1) {
-		sprites[1]->draw(int(go->horizontalPosition), int(go->verticalPosition - offset + header));
+		xPos = int(go->horizontalPosition);
+		yPos = int(go->verticalPosition - offset + header);
 	}
 	if (playerBehaviourRef->getCurrentDirection() == 2) {
-		sprites[2]->draw(int(go->horizontalPosition - offset), int(go->verticalPosition + header));
+		xPos = int(go->horizontalPosition - offset);
+		yPos = int(go->verticalPosition + header);
 	}
 	if (playerBehaviourRef->getCurrentDirection() == 3) {
-		sprites[3]->draw(int(go->horizontalPosition - lateralOffset), int(go->verticalPosition - offset + header));
+		xPos = int(go->horizontalPosition - lateralOffset);
+		yPos = int(go->verticalPosition - offset + header);
 	}
+	if (isRekt) {
+		if (playerBehaviourRef->getCurrentDirection() == 0) {
+			xPos = int(go->horizontalPosition - lateralOffset + offset);
+			yPos = int(go->verticalPosition  + header);
+		}
+		if (playerBehaviourRef->getCurrentDirection() == 1) {
+			xPos = int(go->horizontalPosition - lateralOffset - offset);
+			yPos = int(go->verticalPosition + header - lateralOffset + offset);
+		}
+		if (playerBehaviourRef->getCurrentDirection() == 2) {
+			xPos = int(go->horizontalPosition - lateralOffset + offset );
+			yPos = int(go->verticalPosition + header - lateralOffset - 7);
+		}
+		if (playerBehaviourRef->getCurrentDirection() == 3) {
+			xPos = int(go->horizontalPosition);
+			yPos = int(go->verticalPosition + header - lateralOffset);
+		}
+		//std::cout << xPos << ", " << yPos << std::endl;
+	}
+
+	if (!isRekt) {
+		if (playerBehaviourRef->getCurrentDirection() == 0) {
+			//std::cout << "showing going up" << std::endl;
+			sprites[0]->draw(xPos + 12,yPos);
+		}
+		if (playerBehaviourRef->getCurrentDirection() == 1) {
+			sprites[1]->draw(xPos, yPos - 12);
+		}
+		if (playerBehaviourRef->getCurrentDirection() == 2) {
+			sprites[2]->draw(xPos - 12, yPos);
+		}
+		if (playerBehaviourRef->getCurrentDirection() == 3) {
+			sprites[3]->draw(xPos, yPos + 12);
+		}
+
+
+		//testing 
+
+		xPos = int(go->horizontalPosition);
+		yPos = int(go->verticalPosition);
+
+		if (playerBehaviourRef->getCurrentDirection() == 0) {
+			//std::cout << "showing going up" << std::endl;
+			sprites[0]->draw(xPos, yPos);
+		}
+		if (playerBehaviourRef->getCurrentDirection() == 1) {
+			sprites[1]->draw(xPos, yPos + 12);
+		}
+		if (playerBehaviourRef->getCurrentDirection() == 2) {
+			sprites[2]->draw(xPos + 12, yPos);
+		}
+		if (playerBehaviourRef->getCurrentDirection() == 3) {
+			sprites[3]->draw(xPos, yPos);
+		}
+	}
+
+	if (explosionAnimationFrame >= 15 && explosionAnimationFrame < 20 || 
+		explosionAnimationFrame >= 20 && explosionAnimationFrame < 25) {
+		sprites[7]->draw(xPos, yPos);
+		explosionAnimationFrame++;
+	}
+	if (explosionAnimationFrame >= 10 && explosionAnimationFrame < 15 || 
+		explosionAnimationFrame >= 25 && explosionAnimationFrame < 30) {
+		sprites[6]->draw(xPos, yPos);
+		explosionAnimationFrame++;
+	}
+	if (explosionAnimationFrame >= 5 && explosionAnimationFrame < 10 ||
+		explosionAnimationFrame >= 30 && explosionAnimationFrame < 35) {
+		sprites[5]->draw(xPos, yPos);
+		explosionAnimationFrame++;
+	}
+	if (explosionAnimationFrame > 0 && explosionAnimationFrame < 5 || 
+		explosionAnimationFrame >= 35 && explosionAnimationFrame < 40) {
+		sprites[4]->draw(xPos, yPos);
+		explosionAnimationFrame++;
+	}
+	if (explosionAnimationFrame > 40) {
+		explosionAnimationFrame = 0;
+		doneExploding = true;
+		//go->enabled = false;
+
+	}
+
+	if (isRekt) {
+		explosionAnimationFrame++;
+	}
+
 		
+}
+
+bool PlayerRenderComponent::isDoneExploding() {
+	return doneExploding;
 }
 
 void PlayerRenderComponent::Destroy() 
@@ -236,6 +310,13 @@ void PlayerRenderComponent::Destroy()
 		if (sprites[i] != NULL)
 			sprites[i]->destroy();
 		sprites[i] = NULL;
+	}
+}
+
+void PlayerRenderComponent::Receive(Message m)
+{
+	if (m == WALLCRASH) {
+		isRekt = true;
 	}
 }
 
@@ -261,9 +342,14 @@ void Player::Receive(Message m)
 	}
 	if (m == WALLCRASH) {
 		//SDL_Log("Player::CRASH!");
-		RemoveLife();
+		if (enabled == true) {
+			RemoveLife();
+		}
 
-		if (lives < 0) {
+		this->GetComponent<PlayerBehaviourComponent*>()->Receive(WALLCRASH);
+		this->GetComponent<PlayerRenderComponent*>()->Receive(WALLCRASH);
+
+		if (lives < 0 && enabled == true) {
 			SDL_Log("Player::REKT");
 			Send(GAME_OVER);
 		}

@@ -56,15 +56,37 @@ public:
 
 class BoxCollideComponent : public CollideComponent
 {
-	int x;
-	int y;
+
+	std::vector<GameObject*>* coll_objects;
 	UniGrid* uniGridref;
 	std::vector<UniGridCell> currentCellLocation;
 	std::vector<std::pair<int, int>> currentHashCellLocation; // i really think this is the object index instead
 
+	int minX;
+	int minY;
+	int maxX;
+	int maxY;
+
 public:
-	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, ObjectPool<GameObject>* coll_objects, int x, int y, UniGrid* uniGrid);
-	virtual void Update(double dt);
+	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, std::vector<GameObject*>* coll_objects, int x, int y, UniGrid* uniGrid);
+	virtual void Update(float dt);
 	void InsertCurrentCell(UniGridCell cell);
+	int getMinX();
+	int getMinY();
+	int getMaxX();
+	int getMaxY();
+};
+
+class WindowCollideComponent : public CollideComponent
+{
+	int x;
+	int y;
+	std::vector<GameObject*>* coll_cycles;
+
+public:
+	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, std::vector<GameObject*>* coll_cycles, int x, int y);
+	virtual void Update(float dt);
+	//virtual void Init();
+	//virtual void Destroy();
 };
 

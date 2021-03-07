@@ -14,7 +14,9 @@ class UniGridCell
 {
 public:
 	Vector2D minPos, maxPos;
-	int state; //check gameobject for enum
+	//int state; //check gameobject for enum
+	//int wallState;
+	std::pair<int, int> state; // id = vector index + 1, 2nd is wallstate
 	std::vector<GameObject*> cyclesInCell;
 
 	virtual void Init(Vector2D min, Vector2D max);
@@ -29,7 +31,7 @@ public:
 	int windowX, windowY;
 	std::vector<GameObject*>* lightcycles;
 	//ObjectPool<GameObject>* coll_objects;
-	//ObjectPool<GameObject>* grid_coll_objects;
+	ObjectPool<GameObject>* grid_coll_objects;
 	// vector2d to remember positions of each gridsquare, and objectpool to note whats inside
 	std::vector<std::vector<UniGridCell>> grid;
 

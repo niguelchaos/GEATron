@@ -41,12 +41,15 @@ class PlayerBehaviourComponent : public Component
 	const int DECELERATE = -1;
 	ObjectPool<Lightwall> * lightwall_pool;
 
+	bool isRekt = false;
+
 public:
 	virtual ~PlayerBehaviourComponent() {}
 
 	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects);
 	virtual void Init();
 	virtual void Update(float dt);
+	virtual void Receive(Message m);
 
 	// move the player left or right
 	// param move depends on the time, so the player moves always at the same speed on any computer
@@ -67,11 +70,16 @@ class PlayerRenderComponent : public RenderComponent
 {
 	std::vector<Sprite*> sprites;
 	PlayerBehaviourComponent* playerBehaviourRef;
+	bool isRekt = false;
+	int explosionAnimationFrame = 0;
+	bool doneExploding = false;
 
 public:
 	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, std::vector<const char*> sprite_names, PlayerBehaviourComponent* playerBehaviourRef);
 	virtual void Update(float dt);
 	virtual void Destroy();
+	virtual void Receive(Message m);
+	bool isDoneExploding();
 };
 
 // the main player
@@ -80,6 +88,7 @@ class Player : public GameObject
 public:
 
 	int lives;	// it's game over when goes below zero 
+
 
 	virtual ~Player()	{		SDL_Log("Player::~Player");	}
 

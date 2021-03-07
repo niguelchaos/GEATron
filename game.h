@@ -12,7 +12,7 @@ class Game : public GameObject
 	//ObjectPool<Bomb> bombs_pool;
 	//ObjectPool<Lightwall> player_lightwall_pool;
 	std::vector<Player*> player_pool;
-	//std::vector<Player> player_cells_check;
+	std::vector<Player*> player_cells_check;
 
 	Player * player;
 	
@@ -36,6 +36,8 @@ class Game : public GameObject
 
 	//float timer = 0;
 	//const float TIMER_CD = 0.2f;
+	int playerHitboxWidth = 8;
+	int playerHitboxHeight = 8;
 
 	int startFrameTime;
 	int frameTicksDuration;
@@ -62,6 +64,10 @@ public:
 		playerSpriteNames.push_back("data/RightPlayer.bmp");
 		playerSpriteNames.push_back("data/DownPlayer.bmp");
 		playerSpriteNames.push_back("data/LeftPlayer.bmp");
+		playerSpriteNames.push_back("data/Explosion1.bmp");
+		playerSpriteNames.push_back("data/Explosion2.bmp");
+		playerSpriteNames.push_back("data/Explosion3.bmp");
+		playerSpriteNames.push_back("data/Explosion4.bmp");
 
 		PlayerRenderComponent* player_render = new PlayerRenderComponent();
 		//std::cout << "playerspritenames address" << &playerSpriteNames << std::endl;
@@ -73,15 +79,15 @@ public:
 		wallController = new WallController();
 		wallController->Create(engine, player, &game_objects, uniformGrid); 
 
-		// Collision
-		//CollideComponent* player_collide = new CollideComponent();
-		//player_collide->Create(engine, player, &game_objects, (ObjectPool<GameObject>*)& bombs_pool);
+		// Bike Collision Component
+		BoxCollideComponent* player_collide = new BoxCollideComponent();
+		player_collide->Create(engine, player, &game_objects, (std::vector<GameObject*>*)&player_cells_check, playerHitboxWidth, playerHitboxHeight, uniformGrid);
 
 		player->Create();
 		player->AddComponent(player_behaviour);
 		//player->AddComponent(player_wallcontroller);
 		player->AddComponent(player_render);
-		//player->AddComponent(player_collide);
+		player->AddComponent(player_collide);
 		player->AddReceiver(this);
 
 		game_objects.insert(player);
@@ -92,8 +98,8 @@ public:
 
 		window = new GameObject();
 		window->Create();
-		BoxCollideComponent* windowCollider = new BoxCollideComponent();
-		windowCollider->Create(engine, window, &game_objects, reinterpret_cast<ObjectPool<GameObject>*>(&player_pool), engine->getWidth(), engine->getHeight(), uniformGrid);
+		WindowCollideComponent* windowCollider = new WindowCollideComponent();
+		windowCollider->Create(engine, window, &game_objects, reinterpret_cast<std::vector<GameObject*>*>(&player_pool), engine->getWidth(), engine->getHeight());
 		window->AddComponent(windowCollider);
 		game_objects.insert(window);
 
@@ -143,7 +149,7 @@ public:
 	{
 		player->Init();
 		uniformGrid->Init(8, reinterpret_cast<std::vector<GameObject*>*>(&player_pool), 512, 544);
-		
+		window->Init();
 		//enemies_grid->Init();
 		enabled = true;
 	}
@@ -161,7 +167,7 @@ public:
 		//timer += dt;
 
 		if (game_over == true) {
-			dt = 0;
+			//dt = 0;
 		}
 
 		//std::cout << timer << std::endl;
@@ -184,7 +190,7 @@ public:
 		 //draw each of the cells, aka grid
 		//for (int i = 0; i < uniformGrid->grid.size(); i++) {
 		//	for (int j = 0; j < uniformGrid->grid[i].size(); j++) {
-		//		if (uniformGrid->grid[i][j].state == EMPTY) {
+		//		if (uniformGrid->grid[i][j].state.second == EMPTY) {
 		//			//std::cout << "state: " << uniformGrid->grid[i][j].state << std::endl;
 		//			engine->drawCell(uniformGrid->grid[i][j].minPos, uniformGrid->grid[i][j].maxPos);
 		//		}
@@ -246,6 +252,12 @@ public:
 			game_over = true;
 			SDL_Log("Game:: OVER");
 			SDL_Log("HOTEL:: TRIVAGO");
+			for (int i = 0; i < player_pool.size(); i++) {
+				if (player_pool[i]->GetComponent<PlayerRenderComponent*>()->isDoneExploding() == true) {
+					std::cout << "Done exploding" << std::endl;
+					player_pool[i]->enabled = false;
+				}
+			}
 		}
 
 		if (m == ALIEN_HIT) 

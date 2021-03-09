@@ -3,6 +3,8 @@
 #include "SDL.h"
 #include "SDL_ttf.h"
 #include "SDL_image.h"
+//#include "SDL_audio.h"
+#include "SDL_mixer.h"
 #include "vector2D.h"
 class Sprite
 {
@@ -55,11 +57,21 @@ public:
 	//draws grid cell
 	void AvancezLib::drawCell(Vector2D minPos, Vector2D maxPos);
 	void AvancezLib::fillRect(Vector2D minPos, Vector2D maxPos, int r, int g, int b);
+	void LoadSound(const char* filename);
+	void LoadMp3(const char* filename);
+	void PlaySound(int loop);
+	void PlayMp3(int loop);
+	int isMp3Playing();
+	void finishMp3();
+
+	int AvancezLib::isSoundPlaying();
+	void AvancezLib::finishSound();
 
 	// loads and draws image
 	void drawImage(const char* path, int minX, int minY, int maxX, int maxY);
 	// Return the total time spent in the game, in seconds.
 	float getElapsedTime();
+
 
 	int getWidth();
 	int getHeight();
@@ -71,7 +83,10 @@ public:
 		bool right; // right arrow
 		bool up; // up arrow
 		bool down; // down arrow
+
 		bool esc; // escape button
+		bool r; // reset
+		bool b; // background
 
 		bool a; // left arrow
 		bool d; // right arrow
@@ -88,7 +103,12 @@ private:
 	SDL_Renderer * renderer;
 
 	TTF_Font* font;
-
+	//SDL_AudioSpec fmt;
+	Mix_Chunk* sound;
+	Mix_Music* mp3sound;
+	int channel;
+	int mp3playing = false;
+	int soundPlaying = false;
 	KeyStatus key;
 };
 

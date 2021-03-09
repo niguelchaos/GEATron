@@ -105,21 +105,6 @@ void UniGrid::Update(double dt)
 		it->second = nullptr;
 	}
 
-	// clear collision pool
-	//if (grid_coll_objects->pool.empty()) {
-	//	//std::cout << "shit " << std::endl;
-	//}
-	//else {
-	//	grid_coll_objects->pool.clear();
-	//}
-
-
-	//if (grid_coll_objects->pool.empty() != true) {
-	//	grid_coll_objects->pool.clear();
-	//	//std::cout << "	gridcoll cleared - size "<< grid_coll_objects->pool.size() << std::endl;
-	//}
-
-
 	//go through all the cycles, put them in corresponding cells
 	for (int i = 0; i < lightcycles->size(); i++) {
 		GameObject* currentCycle = lightcycles->at(i);
@@ -141,7 +126,6 @@ void UniGrid::Update(double dt)
 
 		for (int a = minPosX; a <= maxPosX; a++) {
 			for (int b = minPosY; b <= maxPosY; b++) {
-				//currentBall->GetComponent<CircleCollideComponent*>()->InsertCurrentCell(uniGrid->grid[a][b]);
 
 				uniGrid->grid[a][b].cyclesInCell.push_back(currentCycle);
 
@@ -164,19 +148,6 @@ void UniGrid::Update(double dt)
 			}
 		}
 	}
-
-	//// go through all cells, put any cell that has 2+ balls into cells to check
-	//for (int i = 0; i < uniGrid->grid.size(); i++) {
-	//	for (int j = 0; j < uniGrid->grid[i].size(); j++) {
-	//		// only look for cells with multiple balls
-	//		if (uniGrid->grid[i][j].ballsInCell.size() > 1) {
-	//			for (int k = 0; k < uniGrid->grid[i][j].ballsInCell.size(); k++) {
-	//				//std::cout << "	Inserted ball to check" << std::endl;
-	//				grid_coll_objects->pool.push_back(uniGrid->grid[i][j].ballsInCell[k]);
-	//			}
-	//		}
-	//	}
-	//}
 
 }
 
@@ -213,17 +184,15 @@ void UniGrid::UpdateState(double dt)
 		}
 		if (currentCycle->GetComponent<PlayerBehaviourComponent*>()->getCurrentDirection() == 2) {
 			maxPosY = ((currentCycle->verticalPosition) + positionWidth) / uniGrid->cellSize;
-			//std::cout << "	// MIN:  " << minPosX << " , " << minPosY << " || MAX: " << maxPosX << ", " << maxPosY << std::endl;
 		}
 		if (currentCycle->GetComponent<PlayerBehaviourComponent*>()->getCurrentDirection() == 3) {
 			minPosX = ((currentCycle->horizontalPosition)  - positionWidth) / uniGrid->cellSize;
-			//maxPosX = (currentCycle->horizontalPosition + (positionWidth)) / uniGrid->cellSize;
-			//std::cout << "	// MIN:  " << minPosX << " , " << minPosY << " || MAX: " << maxPosX << ", " << maxPosY << std::endl;
 		}
 		//std::cout << "	// MIN:  " << minPosX << " , " << minPosY << " || MAX: " << maxPosX << ", " << maxPosY<< std::endl;
+	
 		// leave a border around edge as a "wall"
 		if (minPosX < 1) { minPosX = 1; }
-		if (minPosY < 9) { minPosY = 9; }
+		if (minPosY < 8) { minPosY = 8; }
 		if (maxPosX > 62) { maxPosX = 62; }
 		if (maxPosY > 66) { maxPosY = 66; }
 		
@@ -326,20 +295,7 @@ void UniGrid::CheckCollisions() {
 
 		GameObject* currentCycle = lightcycles->at(i);
 
-		// check for wallcrashes
-		if (currentCycle->horizontalPosition < border) {
-			currentCycle->Receive(WALLCRASH);
-		}
-		else if (currentCycle->horizontalPosition > windowX - border - playerWidth) {
-			currentCycle->Receive(WALLCRASH);
-		}
-		else if (currentCycle->verticalPosition < (header + border)) {
-			currentCycle->Receive(WALLCRASH);
-		}
-		else if (currentCycle->verticalPosition > windowY -(border)) {
-			currentCycle->Receive(WALLCRASH);
-		}
-
+		 //remove walls of that bike
 		if (currentCycle->enabled == false) {
 			for (int a = 0; a < this->grid.size(); a++) {
 				for (int b = 0; b < this->grid[a].size(); b++) {
@@ -350,44 +306,9 @@ void UniGrid::CheckCollisions() {
 				}
 			}
 		}
-
-
-		// wall collision
-		int cycleWidth = 14;
-		int cycleHeight = 32;
-		int positionWidth = 6;
-
-		if (currentCycle->GetComponent<PlayerBehaviourComponent*>()->getGear() == 1) {
-			positionWidth = 8;
-		}
-		if (currentCycle->GetComponent<PlayerBehaviourComponent*>()->getGear() == 2) {
-			positionWidth = 16;
-		}
-
-
-		int minPosX = currentCycle->GetComponent<BoxCollideComponent*>()->getMinX() / cellSize;
-		int minPosY = currentCycle->GetComponent<BoxCollideComponent*>()->getMinY() / cellSize;
-		int maxPosX = currentCycle->GetComponent<BoxCollideComponent*>()->getMaxX() / cellSize;
-		int maxPosY = currentCycle->GetComponent<BoxCollideComponent*>()->getMaxY() / cellSize;
-
-
-		//// leave a border around edge as a "wall"
-		if (minPosX < 1) { minPosX = 1; }
-		if (minPosY < 8) { minPosY = 8; }
-		if (maxPosX > 62) { maxPosX = 62; }
-		if (maxPosY > 66) { maxPosY = 66; }
-
-		//std::cout << minPosX << ", " << minPosY << " Max == " << maxPosX << ", " << maxPosY << std::endl;
-		for (int a = minPosX; a <= maxPosX; a++) {
-			for (int b = maxPosY; b <= maxPosY; b++) {
-				if (grid[a][b].state.second != EMPTY) {
-					std::cout << "									HIT" << std::endl;
-					currentCycle->Receive(WALLCRASH);
-				}
-			}
-		}
-		 
-		
+		// 1 update position
+		// 2 check collisions
+		// player should ask grid if they have crashed or not\		
 	}
 }
 

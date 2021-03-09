@@ -7,24 +7,20 @@ class Game : public GameObject
 	std::set<GameObject*> game_objects;	// http://www.cplusplus.com/reference/set/set/
 	
 	AvancezLib* engine;
-
-	//ObjectPool<Rocket> rockets_pool;	// used to instantiate rockets
-	//ObjectPool<Bomb> bombs_pool;
-	//ObjectPool<Lightwall> player_lightwall_pool;
 	std::vector<Player*> player_pool;
 	std::vector<Player*> player_cells_check;
+
+	int currentBackground;
+	std::vector<const char*> backgroundNames;
 
 	Player * player;
 	Player* player2;
 	int winner = 0;
-	//ObjectPool<Alien> enemies;
-	//Grid * enemies_grid;
 
 	GameObject* window;
 	UniGrid* uniformGrid;
 	WallController* wallController;
 
-	Sprite * life_sprite;
 	bool game_over = false;
 	bool game_won = false;
 	bool aliens_alive = false;
@@ -35,8 +31,6 @@ class Game : public GameObject
 	int currentTime;
 	int elapsedTime = 0;
 
-	//float timer = 0;
-	//const float TIMER_CD = 0.2f;
 	int playerHitboxWidth = 8;
 	int playerHitboxHeight = 8;
 
@@ -45,17 +39,29 @@ class Game : public GameObject
 
 	int frameTicksLimit = 1000 / 60;
 
+	bool prevR = false;
+	bool prevB = false;
+
 public:
 
 	virtual void Create(AvancezLib* engine)
 	{
 		SDL_Log("Game::Create");
-
+		
 		this->engine = engine;
 		uniformGrid = new UniGrid();
 		prevTime = engine->getElapsedTime();
 
+		// background - supposed to be own component i guess
+		currentBackground = 0;
 
+		backgroundNames.push_back("data/background.png");
+		backgroundNames.push_back("data/derpakko.jpg");
+		backgroundNames.push_back("data/ricardo.jpg");
+		backgroundNames.push_back("data/phoseh.png");
+		backgroundNames.push_back("data/wideputin.png");
+		backgroundNames.push_back("data/menacingcycles.png");
+		
 		///////////////////////// wallcontroller /////////////////////////
 		wallController = new WallController();
 		wallController->Create(engine, &game_objects, uniformGrid);
@@ -63,7 +69,7 @@ public:
 		/////////////////////////////////// player 1 /////////////////////////////////////
 		player = new Player();
 		PlayerBehaviourComponent* player_behaviour = new PlayerBehaviourComponent();
-		player_behaviour->Create(engine, player, &game_objects, 1);
+		player_behaviour->Create(engine, player, &game_objects);
 
 		std::vector<const char*> playerSpriteNames;
 		playerSpriteNames.push_back("data/UpPlayer.bmp");
@@ -79,18 +85,12 @@ public:
 		//std::cout << "playerspritenames address" << &playerSpriteNames << std::endl;
 		player_render->Create(engine, player, &game_objects, playerSpriteNames, player_behaviour);
 
-		//WallControllerComponent* player_wallcontroller = new WallControllerComponent();
-		//player_wallcontroller->Create(engine, player, &game_objects, uniformGrid);
-
-
-
 		// Bike Collision Component
 		BoxCollideComponent* player_collide = new BoxCollideComponent();
 		player_collide->Create(engine, player, &game_objects, (std::vector<GameObject*>*)&player_cells_check, playerHitboxWidth, playerHitboxHeight, uniformGrid);
 
 		player->Create();
 		player->AddComponent(player_behaviour);
-		//player->AddComponent(player_wallcontroller);
 		player->AddComponent(player_render);
 		player->AddComponent(player_collide);
 		player->AddReceiver(this);
@@ -103,14 +103,16 @@ public:
 
 		//////////////////////////////////// player 2 ////////////////////////////////////
 		player2 = new Player();
-		PlayerBehaviourComponent* player2_behaviour = new PlayerBehaviourComponent();
-		player2_behaviour->Create(engine, player2, &game_objects, 2);
+		Player2BehaviourComponent* player2_behaviour = new Player2BehaviourComponent();
+		player2_behaviour->Create(engine, player2, &game_objects);
 
+		// be in player instead separate comp
 		std::vector<const char*> player2SpriteNames;
 		player2SpriteNames.push_back("data/UpEnemy.bmp");
 		player2SpriteNames.push_back("data/RightEnemy.bmp");
 		player2SpriteNames.push_back("data/DownEnemy.bmp");
 		player2SpriteNames.push_back("data/LeftEnemy.bmp");
+
 		player2SpriteNames.push_back("data/Explosion1.bmp");
 		player2SpriteNames.push_back("data/Explosion2.bmp");
 		player2SpriteNames.push_back("data/Explosion3.bmp");
@@ -120,19 +122,12 @@ public:
 		//std::cout << "playerspritenames address" << &playerSpriteNames << std::endl;
 		player2_render->Create(engine, player2, &game_objects, player2SpriteNames, player2_behaviour);
 
-		//WallControllerComponent* player_wallcontroller = new WallControllerComponent();
-		//player_wallcontroller->Create(engine, player, &game_objects, uniformGrid);
-
-		//wallController = new WallController();
-		//wallController->Create(engine, player, &game_objects, uniformGrid);
-
 		// Bike Collision Component
 		BoxCollideComponent* player2_collide = new BoxCollideComponent();
 		player2_collide->Create(engine, player2, &game_objects, (std::vector<GameObject*>*) & player_cells_check, playerHitboxWidth, playerHitboxHeight, uniformGrid);
 
 		player2->Create();
 		player2->AddComponent(player2_behaviour);
-		//player2->AddComponent(player2_wallcontroller);
 		player2->AddComponent(player2_render);
 		player2->AddComponent(player2_collide);
 		player2->AddReceiver(this);
@@ -151,44 +146,11 @@ public:
 		window->AddComponent(windowCollider);
 		game_objects.insert(window);
 
-		//life_sprite = engine->createSprite("data/player.bmp");
 
-		//int totalEnemies = 55;
-
-		//put all aliens into an array
-		//for (int i = 0; i < totalEnemies; i++) {
-		//enemies.Create(totalEnemies);
-		//for (auto alien = enemies.pool.begin(); alien != enemies.pool.end(); alien++)
-		//{
-		//	//Alien* alien = new Alien();
-		//	AlienBehaviourComponent* alien_behaviour = new AlienBehaviourComponent();
-		//	alien_behaviour->Create(engine, *alien, &game_objects, &bombs_pool);
-		//	RenderComponent* alien_render = new RenderComponent();
-		//	alien_render->Create(engine, *alien, &game_objects, "data/enemy_0.bmp");
-
-		//	// Collision
-		//	CollideComponent* alien_collide = new CollideComponent();
-		//	alien_collide->Create(engine, *alien, &game_objects, (ObjectPool<GameObject>*) & rockets_pool);
-
-		//	(*alien)->Create();
-		//	(*alien)->AddComponent(alien_behaviour);
-		//	(*alien)->AddComponent(alien_render);
-		//	(*alien)->AddComponent(alien_collide);
-		//	(*alien)->AddReceiver(this);
-		//	(*alien)->enabled = true;
-		//}
-
-		// grid of aliens - used to move them all down only once
-		// does not need rendercomp because its not drawn to screen
-		//enemies_grid = new Grid();
-		//GridBehaviourComponent* grid_behaviour = new GridBehaviourComponent();
-		//grid_behaviour->Create(engine, enemies_grid, &game_objects, &enemies, &bombs_pool);
-		//enemies_grid->Create();
-		//enemies_grid->AddComponent(grid_behaviour);
-		//enemies_grid->AddReceiver(this);
-		//game_objects.insert(enemies_grid);
-
-		//game_objects.insert(player);
+		//////////// sound ///////////////
+		engine->LoadSound("data/revvingphased.wav");
+		engine->LoadMp3("data/sickcrash");
+		engine->PlaySound(0);
 
 	}
 
@@ -205,17 +167,12 @@ public:
 
 	virtual void Update(float dt)
 	{
-		engine->drawImage("data/derpakko.jpg", 0, 64, 512, 480);
-		//engine->drawImage("data/ricardo.jpg", 0, 64, 512, 480);
-		//engine->drawImage("data/background.png", 0, 64, 512, 480);
 		AvancezLib::KeyStatus keys;
 
 		startFrameTime = engine->getElapsedTime();
 
 		currentTime = engine->getElapsedTime();
 		elapsedTime = currentTime - prevTime;
-
-		//timer += dt;
 
 		if (game_over == true) {
 			//dt = 0;
@@ -227,7 +184,8 @@ public:
 				winner = 2;
 				player_pool[1]->GetComponent<PlayerBehaviourComponent*>()->Pause();
 			}
-			else if (player_pool[0]->GetComponent<PlayerBehaviourComponent*>()->isRekt() == true && player_pool[1]->GetComponent<PlayerBehaviourComponent*>()->isRekt() == true) {
+			if (player_pool[0]->GetComponent<PlayerBehaviourComponent*>()->isRekt() == true && 
+					player_pool[1]->GetComponent<PlayerBehaviourComponent*>()->isRekt() == true) {
 				winner = 3;
 			}
 		}
@@ -240,6 +198,24 @@ public:
 			Destroy();
 			engine->quit();
 		}
+		if (keys.r == true && prevR == false) {
+			//Destroy();
+			//Create(this->engine);
+			//Init();
+			std::cout << "restart" << std::endl;
+		}
+		prevR = keys.r;
+
+		if (keys.b == true && prevB == false) {
+			currentBackground++;
+			if (currentBackground >= backgroundNames.size()) {
+				currentBackground = 0;
+			}
+			std::cout << "next bg" << std::endl;
+		}
+		prevB = keys.b;
+		engine->drawImage(backgroundNames[currentBackground], 0, 64, 512, 480);
+
 
 		uniformGrid->Update(dt);
 		wallController->Update(dt);
@@ -258,30 +234,6 @@ public:
 		//		}
 		//	}
 		//}
-	
-
-		// check if aliens are alive - goes through all
-		//aliens_alive = false;
-		//for (auto alien = enemies.pool.begin(); alien != enemies.pool.end(); alien++)
-		//{
-		//	if ((*alien)->enabled == true) {
-		//		aliens_alive = true;
-
-		//		// also check if any enemy is at bottom of screen
-		//		if ((*alien)->verticalPosition >= 480 - 32) {
-		//			game_over = true;
-		//			player->lives = -1;
-		//		}
-		//	}
-		//}
-		// level won if none alive
-		if (aliens_alive == false) {
-			//game_won = true;
-			//game_speed += 0.2;
-
-			//enemies_grid->Init();
-			enabled = true;
-		}
 
 		frameTicksDuration = engine->getElapsedTime() - startFrameTime;
 
@@ -343,9 +295,10 @@ public:
 		//bombs_pool.Destroy();
 		//enemies.Destroy();
 		//enemies_grid->Destroy();
-		
-		delete player;
-		delete player2;
+		delete uniformGrid;
+		player->Destroy();
+		player2->Destroy();
+		window->Destroy();
 	}
 	void showGameover() {
 		int gameoverXpos = 220; 	int gameoverYpos = 32;

@@ -1,32 +1,30 @@
 #include "player.h"
 #include "lightwall.h"
 
-void PlayerBehaviourComponent::Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, int playerNum)
+void PlayerBehaviourComponent::Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects)
 {
 	Component::Create(engine, go, game_objects);
+	this->playerNum = 1;
+	this->startX = 288;
+	this->startY = 512;
+	this->currentDirection = 0;
+}
 
-	if (playerNum != 0) {
-		if (playerNum == 1) {
-			this->playerNum = 1;
-			this->startX = 288;
-			this->startY = 512;
-			this->currentDirection = 0;
-		}
-		if (playerNum != 1) {
-			this->playerNum = 2;
-			this->startX = 160;
-			this->startY = 128;
-			this->currentDirection = 2;
-		}
-	}
+void Player2BehaviourComponent::Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects) 
+{
+	Component::Create(engine, go, game_objects);
+	this->playerNum = 2;
+	this->startX = 160;
+	this->startY = 128;
+	this->currentDirection = 2;
 }
 
 void PlayerBehaviourComponent::Init()
 {
-	go->horizontalPosition = startX;
-	go->verticalPosition = startY;
-	prevPosX = go->horizontalPosition;
-	prevPosY = go->verticalPosition;
+	this->go->horizontalPosition = startX;
+	this->go->verticalPosition = startY;
+	prevPosX = this->go->horizontalPosition;
+	prevPosY = this->go->verticalPosition;
 
 	time_fire_pressed = -10000.f;
 	time_turn_pressed = -10000.f;
@@ -42,6 +40,92 @@ void PlayerBehaviourComponent::Update(float dt)
 	int border = 8;
 	timer += dt;
 
+	if (paused == true) {
+		timer = 0;
+	}
+
+	if (timer > TIMER_CD) {
+
+		if (!isRekt()) {
+			prevDirection = currentDirection;
+			prevPosX = go->horizontalPosition;
+			prevPosY = go->verticalPosition;
+
+			if (engine->isSoundPlaying() == 0) {
+				engine->LoadSound("data/cyclespeeding.wav");
+				engine->PlaySound(-1);
+			}
+
+			if (currentDirection == 0) { go->verticalPosition += -speed; }
+			if (currentDirection == 1) { go->horizontalPosition += speed; }
+			if (currentDirection == 2) { go->verticalPosition += speed; }
+			if (currentDirection == 3) { go->horizontalPosition += -speed; }
+
+
+			// LIMITS FOR PLAYER TO STAY IN FRAME
+			if (go->horizontalPosition > (windowX - (spriteWidth - border))) { go->horizontalPosition = windowX - (spriteWidth - border); }
+			if (go->horizontalPosition < 0) { go->horizontalPosition = 0; }
+			if (go->verticalPosition > (windowY - (spriteWidth - border))) { go->verticalPosition = windowY - (spriteWidth - border); }
+			if (go->verticalPosition < header ) { go->verticalPosition = header; }
+
+
+			//std::cout << "	prev Pos = " << prevPosX << " -- " << prevPosY << std::endl;
+			//std::cout << "current Pos = " << go->horizontalPosition << " -- " <<  go->verticalPosition << std::endl;
+			
+
+			engine->getKeyStatus(keys);
+
+			if (keys.right) {
+				if (prevKeyRight == false) {
+					ChangeDirection(RIGHT);
+				}
+				prevKeyRight = keys.right;
+			}
+			if (keys.left) {
+				if (prevKeyLeft == false) {
+					ChangeDirection(LEFT);
+				}
+				prevKeyLeft = keys.left;
+			}
+			if (!keys.right) { prevKeyRight = keys.right; }
+			if (!keys.left) { prevKeyLeft = keys.left; }
+
+			if (keys.up == true) {
+				if (prevKeyUp == false) {
+					ChangeSpeed(ACCELERATE);
+				}
+				prevKeyUp = keys.up;
+			}
+			if (keys.down == true) {
+				if (prevKeyDown == false) {
+					ChangeSpeed(DECELERATE);
+				}
+				prevKeyDown = keys.down;
+			}
+
+			if (!keys.up) { prevKeyUp = keys.up; }
+			if (!keys.down) { prevKeyDown = keys.down; }
+			
+		}
+
+		timer = 0;
+	}
+
+}
+
+void Player2BehaviourComponent::Update(float dt)
+{
+	AvancezLib::KeyStatus keys;
+	int windowX = 512;
+	int windowY = 544;
+	int spriteWidth = 16;
+	int header = 64;
+	int border = 8;
+	timer += dt;
+
+	if (paused == true) {
+		timer = 0;
+	}
 
 	if (timer > TIMER_CD) {
 
@@ -51,6 +135,12 @@ void PlayerBehaviourComponent::Update(float dt)
 			prevDirection = currentDirection;
 			prevPosX = go->horizontalPosition;
 			prevPosY = go->verticalPosition;
+
+			if (engine->isSoundPlaying() == 0) {
+				engine->LoadSound("data/cyclespeedingphased.wav");
+				engine->PlaySound(-1);
+			}
+
 
 			if (currentDirection == 0) { go->verticalPosition += -speed; }
 			if (currentDirection == 1) { go->horizontalPosition += speed; }
@@ -68,103 +158,51 @@ void PlayerBehaviourComponent::Update(float dt)
 			if (go->horizontalPosition > (windowX - (spriteWidth - border))) { go->horizontalPosition = windowX - (spriteWidth - border); }
 			if (go->horizontalPosition < 0) { go->horizontalPosition = 0; }
 			if (go->verticalPosition > (windowY - (spriteWidth - border))) { go->verticalPosition = windowY - (spriteWidth - border); }
-			if (go->verticalPosition < header ) { go->verticalPosition = header; }
+			if (go->verticalPosition < header) { go->verticalPosition = header; }
 
 
-			std::cout << "	prev Pos = " << prevPosX << " -- " << prevPosY << std::endl;
-			std::cout << "current Pos = " << go->horizontalPosition << " -- " <<  go->verticalPosition << std::endl;
-			
+			//std::cout << "	prev Pos = " << prevPosX << " -- " << prevPosY << std::endl;
+			//std::cout << "current Pos = " << go->horizontalPosition << " -- " << go->verticalPosition << std::endl;
+
 
 			engine->getKeyStatus(keys);
 
-			if (playerNum == 1) {
-				if (keys.right) {
-					if (prevKeyRight == false) {
-						ChangeDirection(RIGHT);
-					}
-					prevKeyRight = keys.right;
-				}
-				if (keys.left) {
-					if (prevKeyLeft == false) {
-						ChangeDirection(LEFT);
-					}
-					prevKeyLeft = keys.left;
-				}
-				if (!keys.right) { prevKeyRight = keys.right; }
-				if (!keys.left) { prevKeyLeft = keys.left; }
-
-				if (keys.up == true) {
-					if (prevKeyUp == false) {
-						ChangeSpeed(ACCELERATE);
-					}
-					prevKeyUp = keys.up;
-				}
-				if (keys.down == true) {
-					if (prevKeyDown == false) {
-						ChangeSpeed(DECELERATE);
-					}
-					prevKeyDown = keys.down;
-				}
-
-				if (!keys.up) { prevKeyUp = keys.up; }
-				if (!keys.down) { prevKeyDown = keys.down; }
-			}
-
 			//////////////////// p2 ////////////////////
-			if (playerNum != 1) {
-				//std::cout << playerNum << std::endl;
-				if (keys.d) {
-					if (prevKeyd == false) {
-						ChangeDirection(RIGHT);
-					}
-					prevKeyd = keys.d;
+			//std::cout << playerNum << std::endl;
+			if (keys.d) {
+				if (prevKeyd == false) {
+					ChangeDirection(RIGHT);
 				}
-				if (keys.a) {
-					if (prevKeya == false) {
-						ChangeDirection(LEFT);
-					}
-					prevKeya = keys.a;
-				}
-				if (!keys.d) { prevKeyd = keys.d; }
-				if (!keys.a) { prevKeya = keys.a; }
-
-				if (keys.w == true) {
-					if (prevKeyw == false) {
-						ChangeSpeed(ACCELERATE);
-					}
-					prevKeyw = keys.w;
-				}
-				if (keys.s == true) {
-					if (prevKeys == false) {
-						ChangeSpeed(DECELERATE);
-					}
-					prevKeys = keys.s;
-				}
-
-				if (!keys.w) { prevKeyw = keys.w; }
-				if (!keys.s) { prevKeys = keys.s; }
+				prevKeyd = keys.d;
 			}
-			
-		}
+			if (keys.a) {
+				if (prevKeya == false) {
+					ChangeDirection(LEFT);
+				}
+				prevKeya = keys.a;
+			}
+			if (!keys.d) { prevKeyd = keys.d; }
+			if (!keys.a) { prevKeya = keys.a; }
 
+			if (keys.w == true) {
+				if (prevKeyw == false) {
+					ChangeSpeed(ACCELERATE);
+				}
+				prevKeyw = keys.w;
+			}
+			if (keys.s == true) {
+				if (prevKeys == false) {
+					ChangeSpeed(DECELERATE);
+				}
+				prevKeys = keys.s;
+			}
+
+			if (!keys.w) { prevKeyw = keys.w; }
+			if (!keys.s) { prevKeys = keys.s; }
+
+		}
 		timer = 0;
 	}
-
-	//if (keys.fire)
-	//{
-	//	if (CanFire())
-	//	{
-	//		if (dt != 0) {
-	//			// fetches a rocket from the pool and use it in game_objects
-	//			Rocket* rocket = rockets_pool->FirstAvailable();
-	//			if (rocket != NULL)	// rocket is NULL is the object pool can not provide an object
-	//			{
-	//				rocket->Init(go->horizontalPosition);
-	//				game_objects->insert(rocket);
-	//			}
-	//		}
-	//	}
-	//}
 }
 
 void PlayerBehaviourComponent::Receive(Message m)
@@ -233,6 +271,7 @@ float PlayerBehaviourComponent::getPrevDirection() {
 void PlayerBehaviourComponent::Pause() {
 	//this->go->horizontalPosition = prevPosX;
 	//this->go->verticalPosition = prevPosY;
+	paused = true;
 	timer = 0;
 }
 
@@ -301,26 +340,10 @@ void PlayerRenderComponent::Update(float dt)
 	}
 
 	if (!isRekt) {
-		//if (playerBehaviourRef->getCurrentDirection() == 0) {
-		//	//std::cout << "showing going up" << std::endl;
-		//	sprites[0]->draw(xPos + 12,yPos);
-		//}
-		//if (playerBehaviourRef->getCurrentDirection() == 1) {
-		//	sprites[1]->draw(xPos, yPos - 12);
-		//}
-		//if (playerBehaviourRef->getCurrentDirection() == 2) {
-		//	sprites[2]->draw(xPos - 12, yPos);
-		//}
-		//if (playerBehaviourRef->getCurrentDirection() == 3) {
-		//	sprites[3]->draw(xPos, yPos + 12);
-		//}
-
-
-
 
 		if (playerBehaviourRef->getCurrentDirection() == 0) {
 			//std::cout << "showing going up" << std::endl;
-			sprites[0]->draw(xPos , yPos);
+			sprites[0]->draw(xPos, yPos);
 		}
 		if (playerBehaviourRef->getCurrentDirection() == 1) {
 			sprites[1]->draw(xPos, yPos);

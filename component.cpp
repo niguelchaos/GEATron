@@ -68,6 +68,7 @@ void BoxCollideComponent::Create(AvancezLib* engine, GameObject* go, std::set<Ga
 	this->minY = go->verticalPosition;
 	this->maxX = minX + x;
 	this->maxY = minY + y;
+	this->uniGridref = uniGrid;
 }
 
 int BoxCollideComponent::getMinX() { return minX; }
@@ -82,7 +83,7 @@ void BoxCollideComponent::Update(float dt)
 	BoxCollideComponent* boxCollider = go->GetComponent<BoxCollideComponent*>();
 	PlayerBehaviourComponent* playerBehaviourRef = go->GetComponent<PlayerBehaviourComponent*>();
 
-	int hitbox = 7;
+	int hitbox = 8;
 	int offset = 9;
 
 	minX = go->horizontalPosition;
@@ -96,26 +97,27 @@ void BoxCollideComponent::Update(float dt)
 		offset = 16;
 	}
 	if (playerBehaviourRef->getGear() == 2) {
-		offset = 23;
+		hitbox = 14;
+		offset = 24;
 	}
 
 	if (playerBehaviourRef->getCurrentDirection() == 0) {
 		maxY -= offset;
 		minY = maxY - hitbox;
-		maxX += hitbox;
+		maxX += hitbox - 6;
 		engine->drawCell(Vector2D(minX, minY), Vector2D(maxX, maxY));
 		//std::cout << "			|| MIN:  " << minX << " , " << minY << " || MAX: " << maxX << ", " << maxY << std::endl;
 	}
 	if (playerBehaviourRef->getCurrentDirection() == 1) {
 		maxX += offset + hitbox+1;
 		minX = maxX - hitbox+1;
-		maxY += hitbox;
+		maxY += hitbox - 6;
 		engine->drawCell(Vector2D(minX, minY), Vector2D(maxX, maxY));
 	}
 	if (playerBehaviourRef->getCurrentDirection() == 2) {
 		minY += offset;
 		maxY = minY + hitbox;
-		maxX += hitbox;
+		maxX += hitbox - 6;
 		engine->drawCell(Vector2D(minX, minY), Vector2D(maxX, maxY));
 		//minPosY = currentCycle->verticalPosition - positionWidth / cellSize;
 		//std::cout << "	// MIN:  " << minPosX << " , " << minPosY << " || MAX: " << maxPosX << ", " << maxPosY << std::endl;
@@ -123,10 +125,62 @@ void BoxCollideComponent::Update(float dt)
 	if (playerBehaviourRef->getCurrentDirection() == 3) {
 		minX -= (offset + hitbox) ;
 		maxX = minX + hitbox ;
-		maxY += hitbox;
+		maxY += hitbox - 6;
 		engine->drawCell(Vector2D(minX, minY), Vector2D(maxX, maxY));
 		//std::cout << "	// MIN:  " << minX << " , " << minY << " || MAX: " << maxX<< ", " << maxY<< std::endl;
 	}
+
+	// check for wallcrashes
+
+	int windowX = 512;
+	int windowY = 544;
+	int spriteWidth = 16;
+	int header = 64;
+	int border = 8;
+	int playerWidth = 16;
+
+	if (this->go->horizontalPosition < border) {
+		this->go->Receive(WALLCRASH);
+	}
+	else if (this->go->horizontalPosition > windowX - border - playerWidth) {
+		this->go->Receive(WALLCRASH);
+	}
+	else if (this->go->verticalPosition < (header + border)) {
+		this->go->Receive(WALLCRASH);
+	}
+	else if (this->go->verticalPosition > windowY - (border + playerWidth)) {
+		this->go->Receive(WALLCRASH);
+	}
+
+	// wall collision
+	int cellSize = 8;
+	int minPosX = minX / cellSize;
+	int minPosY = minY / cellSize;
+	int maxPosX = maxX/ cellSize;
+	int maxPosY = maxY / cellSize;
+
+	if (minPosX < 1) { minPosX = 1; }
+	if (minPosY < 8) { minPosY = 8; }
+	if (minPosX > 62) { minPosX = 62; }
+	if (minPosY > 66) { minPosY = 66; }
+
+	if (maxPosX < 1) { maxPosX = 1; }
+	if (maxPosY < 8) { maxPosY = 8; }
+	if (maxPosX > 62) { maxPosX = 62; }
+	if (maxPosY > 66) { maxPosY = 66; }
+	
+	//std::cout << "	// MIN:  " << minPosX << " , " << minPosY << " || MAX: " << maxPosX << ", " << maxPosY << std::endl;
+
+	for (int a = minPosX; a <= maxPosX; a++) {
+		for (int b = minPosY; b <= maxPosY; b++) {
+			if (uniGridref->grid[a][b].state.second != EMPTY) {
+				std::cout << "									HIT" << std::endl;
+				this->go->Receive(WALLCRASH);
+			}
+		}
+	}
+
+
 
 	//If we are using a uniform grid, instead query the grid. The grid should then return a number of potential ball objects that we then check for collisions with.
 	//for (auto i = 0; i < coll_objects->pool.size(); i++)

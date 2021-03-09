@@ -12,8 +12,10 @@
 
 class PlayerBehaviourComponent : public Component
 {
+protected:
 	float timer = 0;
-	const float TIMER_CD = 0.05f;
+	const float TIMER_CD = 0.05f; 
+	bool paused = false;
 
 
 	float time_fire_pressed;	// time from the last time the fire button was pressed
@@ -55,7 +57,7 @@ class PlayerBehaviourComponent : public Component
 public:
 	virtual ~PlayerBehaviourComponent() {}
 
-	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, int playerNum);
+	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects);
 	virtual void Init();
 	virtual void Update(float dt);
 	virtual void Receive(Message m);
@@ -74,6 +76,14 @@ public:
 	// return true if enough time has passed from the previous rocket
 	bool CanFire();
 
+};
+
+class Player2BehaviourComponent : public PlayerBehaviourComponent
+{
+public:
+	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects);
+	//virtual void Init();
+	virtual void Update(float dt);
 };
 
 class PlayerRenderComponent : public RenderComponent

@@ -1,10 +1,11 @@
 #include "avancezlib.h"
-#include <iostream>
-#include <SDL_ttf.h>
-#include "SDL.h"
-#include <stdio.h>
-#include <string>
-#include <cstdlib>
+//#include <iostream>
+//#include <SDL_ttf.h>
+//#include "SDL.h"
+//#include "SDL_mixer.h"
+//#include <stdio.h>
+//#include <string>
+//#include <cstdlib>
 
 // Creates the main window. Returns true on success.
 bool AvancezLib::init(int width, int height)
@@ -43,6 +44,15 @@ bool AvancezLib::init(int width, int height)
 		return false;
 	}
 
+	//sound/audio
+	if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) == -1) {
+		return false;
+	}
+
+
+
+
+
 	// initialize the keys
 	key.fire = false;	key.left = false;	key.right = false, key.esc = false;
 	key.up = false;		key.down = false;
@@ -70,7 +80,11 @@ void AvancezLib::destroy()
 	SDL_DestroyWindow(window);
 
 	TTF_CloseFont(font);
-
+	Mix_HaltChannel(channel);
+	Mix_HaltMusic();
+	Mix_FreeChunk(sound);
+	Mix_FreeMusic(mp3sound);
+	Mix_CloseAudio();
 	TTF_Quit();
 	SDL_Quit();
 	IMG_Quit();
@@ -96,6 +110,13 @@ void AvancezLib::processInput()
 			case SDLK_q:
 				key.esc = true;
 				break;
+			case SDLK_r:
+				key.r = true;
+				break;
+			case SDLK_b:
+				key.b = true;
+				break;
+
 			case SDLK_SPACE:
 				key.fire = true;
 				break;
@@ -147,6 +168,13 @@ void AvancezLib::processInput()
 				break;
 			case SDLK_DOWN:
 				key.down = false;
+				break;
+
+			case SDLK_r:
+				key.r = false;
+				break;
+			case SDLK_b:
+				key.b = false;
 				break;
 
 			case SDLK_w:
@@ -245,6 +273,8 @@ void AvancezLib::drawImage(const char* path, int minX, int minY, int maxX, int m
 
 	//Get rid of old loaded surface
 	SDL_FreeSurface(surf);
+	SDL_DestroyTexture(texture);
+	
 }
 
 void AvancezLib::drawCell(Vector2D minPos, Vector2D maxPos) {
@@ -267,6 +297,42 @@ void AvancezLib::fillRect(Vector2D minPos, Vector2D maxPos, int r, int g, int b)
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 }
 
+void AvancezLib::LoadSound(const char* filename) {
+	sound = Mix_LoadWAV(filename);
+	if (sound == NULL) {
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to load sound from %s! SDL Error: %s\n", filename, SDL_GetError());
+	}
+}
+
+void AvancezLib::LoadMp3(const char* filename) {
+	mp3sound = Mix_LoadMUS(filename);
+	if (mp3sound == NULL) {
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to load sound from %s! SDL Error: %s\n", filename, SDL_GetError());
+	}
+}
+
+void AvancezLib::PlaySound(int loop) {
+	channel = Mix_PlayChannel(-1, sound, loop); 
+	if (channel == -1) {
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to play channel !  %s \n", SDL_GetError());
+	}
+	soundPlaying = true;
+}
+void AvancezLib::PlayMp3(int loop) {
+	//channel = Mix_PlayChannel(-1, sound, loop);
+	if (Mix_PlayMusic(mp3sound, loop) == -1) {
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to play mp3 !  %s \n", SDL_GetError());
+	}
+	mp3playing = true;
+}
+
+int AvancezLib::isMp3Playing() { return mp3playing; }
+void AvancezLib::finishMp3() { mp3playing = false; }
+
+int AvancezLib::isSoundPlaying() { return soundPlaying; }
+void AvancezLib::finishSound() { soundPlaying = false; }
+
+
 float AvancezLib::getElapsedTime()
 {
 	return SDL_GetTicks() / 1000.f;
@@ -287,6 +353,8 @@ void AvancezLib::getKeyStatus(KeyStatus & keys)
 	keys.up = key.up;
 	keys.down = key.down;
 	keys.esc = key.esc;
+	keys.r = key.r;
+	keys.b = key.b;
 
 	keys.w = key.w;
 	keys.a = key.a;

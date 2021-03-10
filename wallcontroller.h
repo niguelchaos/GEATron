@@ -2,8 +2,6 @@
 #include "component.h"
 #include "game_object.h"
 #include "avancezlib.h"
-#include "rocket.h"
-#include "lightwall.h"
 #include "unigrid.h"
 #include <vector>
 #include <iostream>
@@ -11,7 +9,7 @@
 class WallController {
 	UniGrid* unigridRef;
 	AvancezLib* engine;	// used to access the engine
-	GameObject* go;		// the game object this component is part of
+	//GameObject* go;		// the game object this component is part of
 	std::set<GameObject*>* game_objects;	// the global container of game objects
 
 

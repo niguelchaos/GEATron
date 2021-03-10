@@ -70,6 +70,14 @@ public:
 		wallController = new WallController();
 		wallController->Create(engine, &game_objects, uniformGrid);
 
+		///////////////////////// window collider /////////////////////////
+		window = new GameObject();
+		window->Create();
+		WindowCollideComponent* windowCollider = new WindowCollideComponent();
+		windowCollider->Create(engine, window, &game_objects, reinterpret_cast<std::vector<GameObject*>*>(&player_pool), engine->getWidth(), engine->getHeight());
+		window->AddComponent(windowCollider);
+		game_objects.insert(window);
+
 		/////////////////////////////////// player 1 /////////////////////////////////////
 		player = new Player();
 		PlayerBehaviourComponent* player_behaviour = new PlayerBehaviourComponent();
@@ -86,12 +94,11 @@ public:
 		playerSpriteNames.push_back("data/Explosion4.bmp");
 
 		PlayerRenderComponent* player_render = new PlayerRenderComponent();
-		//std::cout << "playerspritenames address" << &playerSpriteNames << std::endl;
 		player_render->Create(engine, player, &game_objects, playerSpriteNames, player_behaviour);
 
 		// Bike Collision Component
 		BoxCollideComponent* player_collide = new BoxCollideComponent();
-		player_collide->Create(engine, player, &game_objects, (std::vector<GameObject*>*)&player_cells_check, playerHitboxWidth, playerHitboxHeight, uniformGrid);
+		player_collide->Create(engine, player, &game_objects, (std::vector<GameObject*>*)&player_cells_check, playerHitboxWidth, playerHitboxHeight, uniformGrid, windowCollider);
 
 		player->Create();
 		player->AddComponent(player_behaviour);
@@ -128,7 +135,7 @@ public:
 
 		// Bike Collision Component
 		BoxCollideComponent* player2_collide = new BoxCollideComponent();
-		player2_collide->Create(engine, player2, &game_objects, (std::vector<GameObject*>*) & player_cells_check, playerHitboxWidth, playerHitboxHeight, uniformGrid);
+		player2_collide->Create(engine, player2, &game_objects, (std::vector<GameObject*>*) & player_cells_check, playerHitboxWidth, playerHitboxHeight, uniformGrid, windowCollider);
 
 		player2->Create();
 		player2->AddComponent(player2_behaviour);
@@ -143,18 +150,8 @@ public:
 		player_pool.push_back(player2);
 		////////////////////////////////////////////////////////////////////////
 
-		window = new GameObject();
-		window->Create();
-		WindowCollideComponent* windowCollider = new WindowCollideComponent();
-		windowCollider->Create(engine, window, &game_objects, reinterpret_cast<std::vector<GameObject*>*>(&player_pool), engine->getWidth(), engine->getHeight());
-		window->AddComponent(windowCollider);
-		game_objects.insert(window);
-
-
 		//////////// sound ///////////////
 		engine->PlaySound(0, 1);
-		//engine->LoadMp3("data/sickcrash.mp3");
-		//engine->PlaySound(0);
 
 	}
 
@@ -165,7 +162,6 @@ public:
 		player2->Init();
 		uniformGrid->Init(8, reinterpret_cast<std::vector<GameObject*>*>(&player_pool), 512, 544);
 		window->Init();
-		//enemies_grid->Init();
 		enabled = true;
 	}
 
@@ -178,10 +174,6 @@ public:
 		currentTime = engine->getElapsedTime();
 		elapsedTime = currentTime - prevTime;
 
-		//engine->CheckMp3IsPlaying();
-		//engine->CheckSoundIsPlaying();
-
-		//std::cout << "engine->isMp3Playing()" << engine->isMp3Playing() << std::endl;
 
 		if (game_over == true) {
 			//dt = 0;
@@ -220,7 +212,7 @@ public:
 			if (currentBackground >= backgroundNames.size()) {
 				currentBackground = 0;
 			}
-			std::cout << "next bg" << std::endl;
+			//std::cout << "next bg" << std::endl;
 		}
 		prevB = keys.b;
 		engine->drawImage(backgroundNames[currentBackground], 0, 64, 512, 480);
@@ -274,20 +266,14 @@ public:
 		{
 			//i dont know why the hell text doesnt appear here
 			game_over = true;
-			//SDL_Log("Game:: OVER");
-			//SDL_Log("HOTEL:: TRIVAGO");
+			SDL_Log("Game:: OVER");
+			SDL_Log("HOTEL:: TRIVAGO");
 			for (int i = 0; i < player_pool.size(); i++) {
 				if (player_pool[i]->GetComponent<PlayerRenderComponent*>()->isDoneExploding() == true) {
 					std::cout << "Done exploding" << std::endl;
 					player_pool[i]->enabled = false;
 				}
 			}
-		}
-
-		if (m == ALIEN_HIT) 
-		{
-			SDL_Log("ALIEN HIT");
-			score += POINTS_PER_ALIEN * game_speed;
 		}
 	}
 
@@ -318,14 +304,7 @@ public:
 	void showGameWon() {
 		int levelwonXpos = 190; 	int levelwonYpos = 32;
 		std::string levelwonString;
-		//if (engine->isMp3Playing() == 1) {
-		//	engine->finishMp3();
-		//	std::cout << "ending mp3" << std::endl;
-		//}
-		//if (engine->isSoundPlaying() == 1) {
-			
-		//}
-		//engine->finishMp3();
+
 		engine->finishSound();
 		if (winner == 1) {
 			levelwonString = "=== PLAYER 1 WON! ===";
@@ -343,8 +322,7 @@ public:
 		}
 		if (winner == 2) {
 			levelwonString = "=== PLAYER 2 WON! ===";
-			//if (engine->isMp3Playing() == 0) {
-			//	//engine->LoadMp3("data/sickcrash.mp3");
+
 			if (crashplayed == false) {
 				engine->PlayMp3(0, 1);
 				crashplayed = true;
@@ -359,14 +337,11 @@ public:
 		}
 		if (winner == 3) {
 			levelwonString = "=== DRAW! ===";
-			if (engine->isMp3Playing() == 0) {
-				//engine->LoadMp3("data/sickcrash.mp3");
-				//engine->PlayMp3(0);
+			if (crashplayed == false) {
+				engine->PlayMp3(0, 1);
+				crashplayed = true;
 			}
-			//if (engine->isMp3Playing() == 0) {
-			//	engine->LoadMp3("data/sickcrash.mp3");
-			//	engine->PlayMp3(0);
-			//}
+
 		}
 		const char* levelwonChar = levelwonString.c_str();
 		engine->drawText(levelwonXpos, levelwonYpos, levelwonChar);

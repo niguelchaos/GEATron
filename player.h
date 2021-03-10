@@ -2,8 +2,6 @@
 #include "component.h"
 #include "game_object.h"
 #include "avancezlib.h"
-#include "rocket.h"
-#include "lightwall.h"
 #include "unigrid.h"
 #include <vector>
 #include <iostream>
@@ -17,9 +15,6 @@ protected:
 	const float TIMER_CD = 0.05f; 
 	bool paused = false;
 
-
-	float time_fire_pressed;	// time from the last time the fire button was pressed
-	float fire_time_interval = .1f;
 
 	int gear = 1; // 0 = lowest speed, 2 = highest
 	float speed = 16;
@@ -43,13 +38,10 @@ protected:
 	int playerNum = 0;
 	int startX; int startY;
 
-	float time_turn_pressed;	// time from the last time the right/left button was pressed
-	float TURN_COOLDOWN = 1.f;
 	const int RIGHT = 1;
 	const int LEFT = -1;
 	const int ACCELERATE = 1;
 	const int DECELERATE = -1;
-	//ObjectPool<Lightwall> * lightwall_pool;
 
 	
 	bool rekt = false;
@@ -73,10 +65,6 @@ public:
 	void Pause();
 	bool isRekt();
 	void playRektMp3();
-	//void stopMp3();
-
-	// return true if enough time has passed from the previous rocket
-	bool CanFire();
 
 };
 

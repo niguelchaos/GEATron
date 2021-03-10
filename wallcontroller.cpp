@@ -2,6 +2,7 @@
 
 void WallController::Create(AvancezLib* engine, std::set<GameObject*>* game_objects, UniGrid* unigridRef) {
 	this->unigridRef = unigridRef;
+	// is not gameobject
 	//this->go = go;
 	this->engine = engine;
 	this->game_objects = game_objects;
@@ -12,22 +13,8 @@ void WallController::Update(float dt) {
 }
 
 void WallController::drawWalls() {
-
-	//Lightwall* lightwall = new Lightwall();
-	//LightwallBehaviourComponent* player_lightwall_behaviour = new LightwallBehaviourComponent();
-	//player_lightwall_behaviour->Create(engine, lightwall, this->game_objects);
-
-	//std::vector<const char*> player_lightwallSpriteNames;
-	//player_lightwallSpriteNames.push_back("data/VertLightwallPlayer.bmp");
-	//player_lightwallSpriteNames.push_back("data/HorizLightwallPlayer.bmp");
-
-	//LightwallRenderComponent* player_lightwall_render = new LightwallRenderComponent();
-	//player_lightwall_render->Create(engine, lightwall, this->game_objects, player_lightwallSpriteNames);
-	//lightwall->Create();
-	//lightwall->AddComponent(player_lightwall_behaviour);
-	//lightwall->AddComponent(player_lightwall_render);
+	// colors
 	int p1r = 51;	int p1g = 153;	int p1b = 255;
-
 	int p2r = 255;	int p2g = 178;	int p2b = 102;
 
 	for (int i = 0; i < this->unigridRef->grid.size(); i++) {

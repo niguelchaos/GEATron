@@ -44,24 +44,10 @@ void CollideComponent::Create(AvancezLib* engine, GameObject * go, std::set<Game
 
 void CollideComponent::Update(float dt)
 {
-	//for (auto i = 0; i < coll_objects->pool.size(); i++)
-	//{
-	//	GameObject * go0 = coll_objects->pool[i];
-	//	if (go0->enabled)
-	//	{
-	//		if ((go0->horizontalPosition > go->horizontalPosition - 10) &&
-	//			(go0->horizontalPosition < go->horizontalPosition + 10) &&
-	//			(go0->verticalPosition   > go->verticalPosition - 10) &&
-	//			(go0->verticalPosition   < go->verticalPosition + 10))
-	//		{
-	//			go->Receive(HIT);
-	//			go0->Receive(HIT);
-	//		}
-	//	}
-	//}
+
 }
 
-void BoxCollideComponent::Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, std::vector<GameObject*>* coll_objects, int x, int y, UniGrid* uniGrid) {
+void BoxCollideComponent::Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, std::vector<GameObject*>* coll_objects, int x, int y, UniGrid* uniGrid, WindowCollideComponent* windowCollider) {
 	Component::Create(engine, go, game_objects);
 	this->coll_objects = coll_objects;
 	this->minX = go->horizontalPosition;
@@ -69,6 +55,7 @@ void BoxCollideComponent::Create(AvancezLib* engine, GameObject* go, std::set<Ga
 	this->maxX = minX + x;
 	this->maxY = minY + y;
 	this->uniGridref = uniGrid;
+	this->windowCollider = windowCollider;
 }
 
 int BoxCollideComponent::getMinX() { return minX; }
@@ -119,7 +106,6 @@ void BoxCollideComponent::Update(float dt)
 		maxY = minY + hitbox;
 		maxX += hitbox - 6;
 		engine->drawCell(Vector2D(minX, minY), Vector2D(maxX, maxY));
-		//minPosY = currentCycle->verticalPosition - positionWidth / cellSize;
 		//std::cout << "	// MIN:  " << minPosX << " , " << minPosY << " || MAX: " << maxPosX << ", " << maxPosY << std::endl;
 	}
 	if (playerBehaviourRef->getCurrentDirection() == 3) {
@@ -130,25 +116,22 @@ void BoxCollideComponent::Update(float dt)
 		//std::cout << "	// MIN:  " << minX << " , " << minY << " || MAX: " << maxX<< ", " << maxY<< std::endl;
 	}
 
-	// check for wallcrashes
+	// check for edgecrashes
 
 	int windowX = 512;
 	int windowY = 544;
-	int spriteWidth = 16;
-	int header = 64;
-	int border = 8;
-	int playerWidth = 16;
 
-	if (this->go->horizontalPosition < border) {
+
+	if (this->go->horizontalPosition < this->windowCollider->border) {
 		this->go->Receive(WALLCRASH);
 	}
-	else if (this->go->horizontalPosition > windowX - border - playerWidth) {
+	else if (this->go->horizontalPosition > this->windowCollider->x - this->windowCollider->border - this->windowCollider->playerWidth) {
 		this->go->Receive(WALLCRASH);
 	}
-	else if (this->go->verticalPosition < (header + border)) {
+	else if (this->go->verticalPosition < (this->windowCollider->header + this->windowCollider->border)) {
 		this->go->Receive(WALLCRASH);
 	}
-	else if (this->go->verticalPosition > windowY - (border + playerWidth)) {
+	else if (this->go->verticalPosition > this->windowCollider->y - (this->windowCollider->border + this->windowCollider->playerWidth)) {
 		this->go->Receive(WALLCRASH);
 	}
 
@@ -179,65 +162,6 @@ void BoxCollideComponent::Update(float dt)
 			}
 		}
 	}
-
-
-
-	//If we are using a uniform grid, instead query the grid. The grid should then return a number of potential ball objects that we then check for collisions with.
-	//for (auto i = 0; i < coll_objects->pool.size(); i++)
-	//{
-	//	GameObject* go0 = coll_objects->pool[i];
-
-	//	if (go0->enabled)
-	//	{
-	//		CircleCollideComponent* otherCollider = go0->GetComponent<CircleCollideComponent*>();
-	//		if (otherCollider != nullptr) { //if the other GameObject doesn't have a CircleColliderComponent we shouldn't go in here...
-
-	//			//Write your solution here...
-	//			//Vector2D goTogo0 = go0->position - go->position;
-	//			Vector2D goTogo0 = go0->position;
-	//			// absolute distance between two game objects = |vec(x,y)| = sqrt( x ^ 2 + y ^2)
-	//			float distanceBetweenCircleCenters = sqrt(pow(goTogo0.x, 2) + pow(goTogo0.y, 2));
-	//			//float outsideBoxDistance = x + otherCollider->;
-	//			bool intersection = false;
-	//			//float distanceBetweenCircleCenters = 1;
-	//			//bool outsideBoxCheck = go0->position.x + 
-
-	//			if (go0->position.x < -3 || go0->position.x > boxCollider->x - 29 ||
-	//				go0->position.y < -3 || go0->position.y > boxCollider->y - 29) {
-	//				intersection = true;
-	//			}
-
-	//			if (intersection) {
-	//				//RigidBodyComponent* rigidBodyComponent = go->GetComponent<RigidBodyComponent*>();
-	//				RigidBodyComponent* rigidBodyComponent0 = go0->GetComponent<RigidBodyComponent*>();
-
-	//				// normalized position
-	//				Vector2D goTogo0Normalized = goTogo0 / distanceBetweenCircleCenters;
-	//				//double dotProduct = rigidBodyComponent->velocity.dotProduct(goTogo0Normalized);
-	//				//double dotProduct0 = rigidBodyComponent0->velocity.dotProduct(goTogo0Normalized);
-	//				//double dotProduct0 = rigidBodyComponent0->velocity
-
-	//				//rigidBodyComponent->velocity = goTogo0Normalized * dotProduct0;
-	//				if (go0->position.x < (0 - ballBorder)) {
-	//					rigidBodyComponent0->velocity = rigidBodyComponent0->velocity * Vector2D(-1, 1);
-	//					go0->position.x = (0 - ballBorder);
-	//				}
-	//				if (go0->position.x > boxCollider->x - (32 - ballBorder)) {
-	//					rigidBodyComponent0->velocity = rigidBodyComponent0->velocity * Vector2D(-1, 1);
-	//					go0->position.x = boxCollider->x - (32 - ballBorder);
-	//				}
-	//				if (go0->position.y < (0 - ballBorder)) {
-	//					rigidBodyComponent0->velocity = rigidBodyComponent0->velocity * Vector2D(1, -1);
-	//					go0->position.y = (0 - ballBorder);
-	//				}
-	//				if (go0->position.y > boxCollider->y - (32 - ballBorder)) {
-	//					rigidBodyComponent0->velocity = rigidBodyComponent0->velocity * Vector2D(1, -1);
-	//					go0->position.y = boxCollider->y - (32 - ballBorder);
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
 }
 
 void BoxCollideComponent::InsertCurrentCell(UniGridCell cell) {
@@ -272,65 +196,8 @@ void WindowCollideComponent::Update(float dt)
 			intersection = true;
 		}
 		if (intersection == true) {
-			//std::cout << "sgut " << std::endl;
 			//go0->Receive(WALLCRASH);
 		}
 
 	}
-	//If we are using a uniform grid, instead query the grid. The grid should then return a number of potential ball objects that we then check for collisions with.
-	//for (auto i = 0; i < coll_objects->pool.size(); i++)
-	//{
-	//	GameObject* go0 = coll_objects->pool[i];
-
-	//	if (go0->enabled)
-	//	{
-	//		CircleCollideComponent* otherCollider = go0->GetComponent<CircleCollideComponent*>();
-	//		if (otherCollider != nullptr) { //if the other GameObject doesn't have a CircleColliderComponent we shouldn't go in here...
-
-	//			//Write your solution here...
-	//			//Vector2D goTogo0 = go0->position - go->position;
-	//			Vector2D goTogo0 = go0->position;
-	//			// absolute distance between two game objects = |vec(x,y)| = sqrt( x ^ 2 + y ^2)
-	//			float distanceBetweenCircleCenters = sqrt(pow(goTogo0.x, 2) + pow(goTogo0.y, 2));
-	//			//float outsideBoxDistance = x + otherCollider->;
-	//			bool intersection = false;
-	//			//float distanceBetweenCircleCenters = 1;
-	//			//bool outsideBoxCheck = go0->position.x + 
-
-	//			if (go0->position.x < -3 || go0->position.x > boxCollider->x - 29 ||
-	//				go0->position.y < -3 || go0->position.y > boxCollider->y - 29) {
-	//				intersection = true;
-	//			}
-
-	//			if (intersection) {
-	//				//RigidBodyComponent* rigidBodyComponent = go->GetComponent<RigidBodyComponent*>();
-	//				RigidBodyComponent* rigidBodyComponent0 = go0->GetComponent<RigidBodyComponent*>();
-
-	//				// normalized position
-	//				Vector2D goTogo0Normalized = goTogo0 / distanceBetweenCircleCenters;
-	//				//double dotProduct = rigidBodyComponent->velocity.dotProduct(goTogo0Normalized);
-	//				//double dotProduct0 = rigidBodyComponent0->velocity.dotProduct(goTogo0Normalized);
-	//				//double dotProduct0 = rigidBodyComponent0->velocity
-
-	//				//rigidBodyComponent->velocity = goTogo0Normalized * dotProduct0;
-	//				if (go0->position.x < (0 - ballBorder)) {
-	//					rigidBodyComponent0->velocity = rigidBodyComponent0->velocity * Vector2D(-1, 1);
-	//					go0->position.x = (0 - ballBorder);
-	//				}
-	//				if (go0->position.x > boxCollider->x - (32 - ballBorder)) {
-	//					rigidBodyComponent0->velocity = rigidBodyComponent0->velocity * Vector2D(-1, 1);
-	//					go0->position.x = boxCollider->x - (32 - ballBorder);
-	//				}
-	//				if (go0->position.y < (0 - ballBorder)) {
-	//					rigidBodyComponent0->velocity = rigidBodyComponent0->velocity * Vector2D(1, -1);
-	//					go0->position.y = (0 - ballBorder);
-	//				}
-	//				if (go0->position.y > boxCollider->y - (32 - ballBorder)) {
-	//					rigidBodyComponent0->velocity = rigidBodyComponent0->velocity * Vector2D(1, -1);
-	//					go0->position.y = boxCollider->y - (32 - ballBorder);
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
 }

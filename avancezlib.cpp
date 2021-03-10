@@ -1,11 +1,5 @@
 #include "avancezlib.h"
-//#include <iostream>
-//#include <SDL_ttf.h>
-//#include "SDL.h"
-//#include "SDL_mixer.h"
-//#include <stdio.h>
-//#include <string>
-//#include <cstdlib>
+
 
 // Creates the main window. Returns true on success.
 bool AvancezLib::init(int width, int height)
@@ -51,15 +45,9 @@ bool AvancezLib::init(int width, int height)
 
 	this->revving = Mix_LoadWAV("data/revvingphased.wav");
 	this->speeding = Mix_LoadWAV("data/cyclespeedingphased.wav");
-	this->tictac = Mix_LoadMUS("data/soddingtictac.mp3");
-	this->erynoice = Mix_LoadMUS("data/erynoice.mp3");
-	this->crash = Mix_LoadMUS("data/sickcrash.mp3");
-	//LoadSound("data/revvingphased.wav", this->revving);
-	//LoadMp3("data/soddingtictac.mp3", this->tictac);
-	//LoadMp3("data/erynoice.mp3", this->erynoice);
-	//LoadMp3("data/sickcrash.mp3", this->crash);
-
-
+	this->tictac = Mix_LoadMUS("./data/soddingtictac.mp3");
+	this->erynoice = Mix_LoadMUS("./data/erynoice.mp3");
+	this->crash = Mix_LoadMUS("./data/sickcrash.mp3");
 
 	// initialize the keys
 	key.fire = false;	key.left = false;	key.right = false, key.esc = false;

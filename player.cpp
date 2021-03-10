@@ -1,5 +1,4 @@
 #include "player.h"
-#include "lightwall.h"
 
 void PlayerBehaviourComponent::Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects)
 {
@@ -26,8 +25,8 @@ void PlayerBehaviourComponent::Init()
 	prevPosX = this->go->horizontalPosition;
 	prevPosY = this->go->verticalPosition;
 
-	time_fire_pressed = -10000.f;
-	time_turn_pressed = -10000.f;
+	//time_fire_pressed = -10000.f;
+	//time_turn_pressed = -10000.f;
 }
 
 void PlayerBehaviourComponent::Update(float dt)
@@ -264,19 +263,6 @@ int PlayerBehaviourComponent::getGear() {
 	return gear;
 }
 
-// return true if enough time has passed from the previous rocket
-bool PlayerBehaviourComponent::CanFire()
-{
-	// shoot just if enough time passed by
-	if ((engine->getElapsedTime() - time_fire_pressed) < (fire_time_interval))
-		return false;
-
-	time_fire_pressed = engine->getElapsedTime();
-
-	SDL_Log("fire!");
-	return true;
-}
-
 float PlayerBehaviourComponent::getCurrentDirection() {
 	return currentDirection;
 }
@@ -286,8 +272,6 @@ float PlayerBehaviourComponent::getPrevDirection() {
 }
 
 void PlayerBehaviourComponent::Pause() {
-	//this->go->horizontalPosition = prevPosX;
-	//this->go->verticalPosition = prevPosY;
 	paused = true;
 	timer = 0;
 }
@@ -296,8 +280,6 @@ void PlayerRenderComponent::Create(AvancezLib* engine, GameObject* go, std::set<
 {
 	Component::Create(engine, go, game_objects);
 	this->playerBehaviourRef = playerBehaviourRef;
-
-	//std::cout << "ref address" << this->playerBehaviourRef  << std::endl;
 
 	for (int i = 0; i < sprite_names.size(); i++) {
 		Sprite* sprite = engine->createSprite(sprite_names[i]);
@@ -437,16 +419,6 @@ void Player::Init()
 
 void Player::Receive(Message m)
 {
-	if (m == HIT)
-	{
-		SDL_Log("Player::Hit!");
-		//RemoveLife();
-
-		//if (lives < 0) {
-		//	SDL_Log("Player::REKT");
-		//	Send(GAME_OVER);
-		//}
-	}
 	if (m == WALLCRASH) {
 		//SDL_Log("Player::CRASH!");
 		if (enabled == true) {
@@ -466,6 +438,6 @@ void Player::Receive(Message m)
 void Player::RemoveLife()
 {
 	lives--;
-	SDL_Log("remaining lives %d", lives);
+	//SDL_Log("remaining lives %d", lives);
 }
 

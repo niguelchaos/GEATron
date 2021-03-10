@@ -54,11 +54,33 @@ public:
 	virtual void Update(float dt);
 };
 
+class WindowCollideComponent : public CollideComponent
+{
+
+	std::vector<GameObject*>* coll_cycles;
+
+public:
+	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, std::vector<GameObject*>* coll_cycles, int x, int y);
+	virtual void Update(float dt);
+	//virtual void Init();
+	//virtual void Destroy();
+
+	// isnt that big of an issue currently for these to be globally accessible
+	int x;
+	int y;
+
+	int spriteWidth = 16;
+	int header = 64;
+	int border = 8;
+	int playerWidth = 16;
+};
+
 class BoxCollideComponent : public CollideComponent
 {
 
 	std::vector<GameObject*>* coll_objects;
 	UniGrid* uniGridref;
+	WindowCollideComponent* windowCollider;
 	std::vector<UniGridCell> currentCellLocation;
 	std::vector<std::pair<int, int>> currentHashCellLocation; // i really think this is the object index instead
 
@@ -68,7 +90,7 @@ class BoxCollideComponent : public CollideComponent
 	int maxY;
 
 public:
-	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, std::vector<GameObject*>* coll_objects, int x, int y, UniGrid* uniGrid);
+	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, std::vector<GameObject*>* coll_objects, int x, int y, UniGrid* uniGrid, WindowCollideComponent* windowCollider);
 	virtual void Update(float dt);
 	void InsertCurrentCell(UniGridCell cell);
 	int getMinX();
@@ -77,16 +99,5 @@ public:
 	int getMaxY();
 };
 
-class WindowCollideComponent : public CollideComponent
-{
-	int x;
-	int y;
-	std::vector<GameObject*>* coll_cycles;
 
-public:
-	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, std::vector<GameObject*>* coll_cycles, int x, int y);
-	virtual void Update(float dt);
-	//virtual void Init();
-	//virtual void Destroy();
-};
 

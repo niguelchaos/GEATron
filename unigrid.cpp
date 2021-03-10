@@ -5,7 +5,6 @@
 void UniGridCell::Init(Vector2D min, Vector2D max) {
 	this->minPos = min;
 	this->maxPos = max;
-	//this->wallState = 0;  //0 = empty
 
 	// id = vector index + 1, 2nd is wallstate
 	std::pair<int, int> state;
@@ -14,7 +13,7 @@ void UniGridCell::Init(Vector2D min, Vector2D max) {
 
 void UniGridCell::Update(double dt)
 {
-	//somehow tell circlecollide balls to check
+
 }
 
 
@@ -60,7 +59,7 @@ void UniGrid::Init(int cellSize, std::vector<GameObject*>* lightcycles, int wind
 			currentCellCoord.first = rowCounter;
 			currentCellCoord.second = colCounter;
 			hashTable[currentCellCoord];
-			//std::cout << "currentcellcoord inserted --" << currentCellCoord.first << ",  " << currentCellCoord.second << std::endl;
+			
 			// go down a cell
 			minPosY = maxPosY;
 			maxPosY += cellSize;
@@ -85,7 +84,6 @@ void UniGrid::Update(double dt)
 {
 	//std::cout << "Start Frame " << std::endl;
 	UniGrid* uniGrid = this;
-	//std::cout << "Unigrid ->  " << uniGrid->grid.size() << std::endl;
 
 	UpdateState(dt);
 	CheckCollisions();
@@ -308,7 +306,7 @@ void UniGrid::CheckCollisions() {
 		}
 		// 1 update position
 		// 2 check collisions
-		// player should ask grid if they have crashed or not\		
+		// player should ask grid if they have crashed or not
 	}
 }
 

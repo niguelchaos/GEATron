@@ -49,7 +49,15 @@ bool AvancezLib::init(int width, int height)
 		return false;
 	}
 
-
+	this->revving = Mix_LoadWAV("data/revvingphased.wav");
+	this->speeding = Mix_LoadWAV("data/cyclespeedingphased.wav");
+	this->tictac = Mix_LoadMUS("data/soddingtictac.mp3");
+	this->erynoice = Mix_LoadMUS("data/erynoice.mp3");
+	this->crash = Mix_LoadMUS("data/sickcrash.mp3");
+	//LoadSound("data/revvingphased.wav", this->revving);
+	//LoadMp3("data/soddingtictac.mp3", this->tictac);
+	//LoadMp3("data/erynoice.mp3", this->erynoice);
+	//LoadMp3("data/sickcrash.mp3", this->crash);
 
 
 
@@ -82,8 +90,11 @@ void AvancezLib::destroy()
 	TTF_CloseFont(font);
 	Mix_HaltChannel(channel);
 	Mix_HaltMusic();
-	Mix_FreeChunk(sound);
-	Mix_FreeMusic(mp3sound);
+	Mix_FreeChunk(revving);
+	Mix_FreeChunk(speeding);
+	Mix_FreeMusic(tictac);
+	Mix_FreeMusic(erynoice);
+	Mix_FreeMusic(crash);
 	Mix_CloseAudio();
 	TTF_Quit();
 	SDL_Quit();
@@ -297,40 +308,96 @@ void AvancezLib::fillRect(Vector2D minPos, Vector2D maxPos, int r, int g, int b)
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 }
 
-void AvancezLib::LoadSound(const char* filename) {
+void AvancezLib::LoadSound(const char* filename, Mix_Chunk* sound) {
 	sound = Mix_LoadWAV(filename);
 	if (sound == NULL) {
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to load sound from %s! SDL Error: %s\n", filename, SDL_GetError());
 	}
 }
 
-void AvancezLib::LoadMp3(const char* filename) {
+void AvancezLib::LoadMp3(const char* filename, Mix_Music* mp3sound) {
 	mp3sound = Mix_LoadMUS(filename);
 	if (mp3sound == NULL) {
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to load sound from %s! SDL Error: %s\n", filename, SDL_GetError());
 	}
 }
 
-void AvancezLib::PlaySound(int loop) {
-	channel = Mix_PlayChannel(-1, sound, loop); 
+void AvancezLib::PlaySound(int loop, int soundNum) {
+	
+	if (Mix_Playing(channel) == 0) {
+		if (soundNum == 1) {
+			
+			channel = Mix_PlayChannel(-1, revving, loop);
+			std::cout << "engine->isMp3Playing()" << isMp3Playing() << std::endl;
+		}
+		if (soundNum == 2) {
+			channel = Mix_PlayChannel(-1, speeding, loop);
+			std::cout << "engine->isMp3Playing()" << isMp3Playing() << std::endl;
+		}
+	}
+	
 	if (channel == -1) {
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to play channel !  %s \n", SDL_GetError());
 	}
-	soundPlaying = true;
+	//soundPlaying = 1;
 }
-void AvancezLib::PlayMp3(int loop) {
+void AvancezLib::PlayMp3(int loop, int mp3Num) {
+
 	//channel = Mix_PlayChannel(-1, sound, loop);
-	if (Mix_PlayMusic(mp3sound, loop) == -1) {
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to play mp3 !  %s \n", SDL_GetError());
+
+	if (Mix_PlayingMusic() == 0) {
+		if (mp3Num == 1) {
+			std::cout << "crashing " << Mix_PlayingMusic() << ", " << isMp3Playing() << std::endl;
+			if (Mix_PlayMusic(crash, loop) == -1) {
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to play mp3 !  %s \n", SDL_GetError());
+			}
+		}
+		if (mp3Num == 2) {
+			std::cout << "tictac " << Mix_PlayingMusic() << ", " << isMp3Playing() << std::endl;
+			if (Mix_PlayMusic(tictac, loop) == -1) {
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to play mp3 !  %s \n", SDL_GetError());
+			}
+		}
+
+		if (mp3Num == 3) {
+			if (Mix_PlayMusic(erynoice, loop) == -1) {
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to play mp3 !  %s \n", SDL_GetError());
+			}
+		}
+
 	}
-	mp3playing = true;
+	
+	//mp3playing = 1;
 }
 
 int AvancezLib::isMp3Playing() { return mp3playing; }
-void AvancezLib::finishMp3() { mp3playing = false; }
+void AvancezLib::finishMp3() { 
+	Mix_HaltMusic();
+	mp3playing = 0;
+}
 
 int AvancezLib::isSoundPlaying() { return soundPlaying; }
-void AvancezLib::finishSound() { soundPlaying = false; }
+void AvancezLib::finishSound() {
+	Mix_HaltChannel(channel);
+	soundPlaying = 0;
+}
+
+void AvancezLib::CheckMp3IsPlaying() {
+	if (Mix_Playing(channel) == 0) {
+		mp3playing = 0;
+	}
+	if (Mix_Playing(channel) == 1) {
+		mp3playing = 1;
+	}
+}
+void AvancezLib::CheckSoundIsPlaying() {
+	if (Mix_PlayingMusic() == 0) {
+		soundPlaying = 0;
+	}
+	if (Mix_PlayingMusic() == 1) {
+		soundPlaying = 1;
+	}
+}
 
 
 float AvancezLib::getElapsedTime()

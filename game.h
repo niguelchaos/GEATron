@@ -42,6 +42,10 @@ class Game : public GameObject
 	bool prevR = false;
 	bool prevB = false;
 
+	bool crashplayed = false;
+	bool tictacplayed = false;
+	bool erynoiceplayed = false;
+
 public:
 
 	virtual void Create(AvancezLib* engine)
@@ -148,9 +152,9 @@ public:
 
 
 		//////////// sound ///////////////
-		engine->LoadSound("data/revvingphased.wav");
-		engine->LoadMp3("data/sickcrash");
-		engine->PlaySound(0);
+		engine->PlaySound(0, 1);
+		//engine->LoadMp3("data/sickcrash.mp3");
+		//engine->PlaySound(0);
 
 	}
 
@@ -173,6 +177,11 @@ public:
 
 		currentTime = engine->getElapsedTime();
 		elapsedTime = currentTime - prevTime;
+
+		//engine->CheckMp3IsPlaying();
+		//engine->CheckSoundIsPlaying();
+
+		//std::cout << "engine->isMp3Playing()" << engine->isMp3Playing() << std::endl;
 
 		if (game_over == true) {
 			//dt = 0;
@@ -309,14 +318,55 @@ public:
 	void showGameWon() {
 		int levelwonXpos = 190; 	int levelwonYpos = 32;
 		std::string levelwonString;
+		//if (engine->isMp3Playing() == 1) {
+		//	engine->finishMp3();
+		//	std::cout << "ending mp3" << std::endl;
+		//}
+		//if (engine->isSoundPlaying() == 1) {
+			
+		//}
+		//engine->finishMp3();
+		engine->finishSound();
 		if (winner == 1) {
 			levelwonString = "=== PLAYER 1 WON! ===";
+			
+			if (crashplayed == false) {
+				engine->PlayMp3(0, 1);
+				crashplayed = true;
+			}
+			if (Mix_PlayingMusic() == 0) {
+				if (erynoiceplayed == false) {
+					engine->PlayMp3(0, 3);
+					erynoiceplayed = true;
+				}
+			}
 		}
 		if (winner == 2) {
 			levelwonString = "=== PLAYER 2 WON! ===";
+			//if (engine->isMp3Playing() == 0) {
+			//	//engine->LoadMp3("data/sickcrash.mp3");
+			if (crashplayed == false) {
+				engine->PlayMp3(0, 1);
+				crashplayed = true;
+			}
+			if (Mix_PlayingMusic() == 0) {
+				if (tictacplayed == false) {
+					engine->PlayMp3(0, 2);
+					tictacplayed = true;
+					std::cout << "playingmp3" << std::endl;
+				}
+			}
 		}
 		if (winner == 3) {
 			levelwonString = "=== DRAW! ===";
+			if (engine->isMp3Playing() == 0) {
+				//engine->LoadMp3("data/sickcrash.mp3");
+				//engine->PlayMp3(0);
+			}
+			//if (engine->isMp3Playing() == 0) {
+			//	engine->LoadMp3("data/sickcrash.mp3");
+			//	engine->PlayMp3(0);
+			//}
 		}
 		const char* levelwonChar = levelwonString.c_str();
 		engine->drawText(levelwonXpos, levelwonYpos, levelwonChar);
@@ -324,7 +374,7 @@ public:
 	void showInterface() {
 
 		Vector2D headerMin = Vector2D(0, 0);
-		Vector2D headerMax = Vector2D(512, 64);
+		Vector2D headerMax = Vector2D(512, 64); 
 		engine->fillRect(headerMin, headerMax, 150, 100, 200);
 
 		int livesXpos = 40; 	int livesYpos = 25;
@@ -338,7 +388,7 @@ public:
 		//const char* livesChar = livesString.c_str();
 		//engine->drawText(livesXpos, livesYpos, livesChar);
 
-		std::string scoreString = "SCORE: ";
+		std::string scoreString = "SCORE: FOREVER ";
 		scoreString.append(std::to_string(score));
 		const char* scoreChar = scoreString.c_str();
 		engine->drawText(scoreXpos, scoreYpos, scoreChar);

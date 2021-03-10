@@ -6,6 +6,10 @@
 //#include "SDL_audio.h"
 #include "SDL_mixer.h"
 #include "vector2D.h"
+#include <stdio.h>
+#include <string>
+#include <cstdlib>
+#include <iostream>
 class Sprite
 {
 	SDL_Renderer * renderer;
@@ -55,12 +59,15 @@ public:
 	// Draws the given text.
 	void drawText(int x, int y, const char* msg);
 	//draws grid cell
-	void AvancezLib::drawCell(Vector2D minPos, Vector2D maxPos);
-	void AvancezLib::fillRect(Vector2D minPos, Vector2D maxPos, int r, int g, int b);
-	void LoadSound(const char* filename);
-	void LoadMp3(const char* filename);
-	void PlaySound(int loop);
-	void PlayMp3(int loop);
+	void drawCell(Vector2D minPos, Vector2D maxPos);
+	void fillRect(Vector2D minPos, Vector2D maxPos, int r, int g, int b);
+	void LoadSound(const char* filename, Mix_Chunk* sound);
+	void LoadMp3(const char* filename, Mix_Music* mp3sound);
+	void PlaySound(int loop, int soundNum);
+	void PlayMp3(int loop, int mp3Num);
+	void CheckMp3IsPlaying();
+	void CheckSoundIsPlaying();
+
 	int isMp3Playing();
 	void finishMp3();
 
@@ -104,11 +111,15 @@ private:
 
 	TTF_Font* font;
 	//SDL_AudioSpec fmt;
-	Mix_Chunk* sound;
-	Mix_Music* mp3sound;
-	int channel;
-	int mp3playing = false;
-	int soundPlaying = false;
+	Mix_Chunk* revving = NULL;
+	Mix_Chunk* speeding = NULL;
+	Mix_Music* crash = NULL;
+	Mix_Music* tictac = NULL;
+	Mix_Music* erynoice = NULL;
+
+	int channel = 0; 
+	int mp3playing = 0;
+	int soundPlaying = 0;
 	KeyStatus key;
 };
 

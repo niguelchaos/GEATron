@@ -51,10 +51,11 @@ void PlayerBehaviourComponent::Update(float dt)
 			prevPosX = go->horizontalPosition;
 			prevPosY = go->verticalPosition;
 
-			if (engine->isSoundPlaying() == 0) {
-				engine->LoadSound("data/cyclespeeding.wav");
-				engine->PlaySound(-1);
-			}
+			//if (engine->isSoundPlaying() == 0) {
+			//	engine->LoadSound("data/cyclespeedingphased.wav");
+			//	engine->PlaySound(-1);
+			//	std::cout << "playing sound" << std::endl;
+			//}
 
 			if (currentDirection == 0) { go->verticalPosition += -speed; }
 			if (currentDirection == 1) { go->horizontalPosition += speed; }
@@ -136,10 +137,8 @@ void Player2BehaviourComponent::Update(float dt)
 			prevPosX = go->horizontalPosition;
 			prevPosY = go->verticalPosition;
 
-			if (engine->isSoundPlaying() == 0) {
-				engine->LoadSound("data/cyclespeedingphased.wav");
-				engine->PlaySound(-1);
-			}
+			
+			engine->PlaySound(0, 2);
 
 
 			if (currentDirection == 0) { go->verticalPosition += -speed; }
@@ -211,6 +210,24 @@ void PlayerBehaviourComponent::Receive(Message m)
 		rekt = true;
 	}
 }
+
+
+void PlayerBehaviourComponent::playRektMp3() {
+	//engine->LoadMp3("data/soddingtictac.mp3");
+	//engine->PlayMp3(0);
+}
+//void Player2BehaviourComponent::Receive(Message m)
+//{
+//	if (m == WALLCRASH) {
+//		rekt = true;
+//		engine->finishSound();
+//		engine->finishMp3();
+//		if (engine->isMp3Playing() == 0) {
+//			engine->LoadMp3("data/sickcrash.mp3");
+//			engine->PlayMp3(0);
+//		}
+//	}
+//}
 
 bool PlayerBehaviourComponent::isRekt() {
 	return rekt;

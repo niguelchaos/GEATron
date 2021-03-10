@@ -72,6 +72,8 @@ public:
 	int getGear();
 	void Pause();
 	bool isRekt();
+	void playRektMp3();
+	//void stopMp3();
 
 	// return true if enough time has passed from the previous rocket
 	bool CanFire();
@@ -84,6 +86,7 @@ public:
 	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects);
 	//virtual void Init();
 	virtual void Update(float dt);
+	//virtual void Receive(Message m);
 };
 
 class PlayerRenderComponent : public RenderComponent

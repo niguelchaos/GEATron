@@ -64,7 +64,7 @@ public:
 	int getGear();
 	void Pause();
 	bool isRekt();
-	void playRektMp3();
+	void reset();
 
 };
 
@@ -74,23 +74,31 @@ public:
 	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects);
 	//virtual void Init();
 	virtual void Update(float dt);
+	//void reset();
 	//virtual void Receive(Message m);
 };
 
 class PlayerRenderComponent : public RenderComponent
 {
+protected:
 	std::vector<Sprite*> sprites;
 	PlayerBehaviourComponent* playerBehaviourRef;
-	bool isRekt = false;
 	int explosionAnimationFrame = 0;
 	bool doneExploding = false;
 
 public:
-	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, std::vector<const char*> sprite_names, PlayerBehaviourComponent* playerBehaviourRef);
+	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, PlayerBehaviourComponent* playerBehaviourRef);
 	virtual void Update(float dt);
 	virtual void Destroy();
 	virtual void Receive(Message m);
 	bool isDoneExploding();
+	void reset();
+};
+
+class Player2RenderComponent : public PlayerRenderComponent
+{
+public:
+	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, PlayerBehaviourComponent* playerBehaviourRef);
 };
 
 // the main player
@@ -107,6 +115,7 @@ public:
 	virtual void Receive(Message m);
 
 	void RemoveLife();
+	void reset();
 
 };
 

@@ -35,7 +35,7 @@ void RenderComponent::Destroy()
 
 
 
-void CollideComponent::Create(AvancezLib* engine, GameObject * go, std::set<GameObject*> * game_objects, ObjectPool<GameObject> * coll_objects)
+void CollideComponent::Create(AvancezLib* engine, GameObject * go, std::set<GameObject*> * game_objects, std::vector<GameObject> * coll_objects)
 {
 	Component::Create(engine, go, game_objects);
 	this->coll_objects = coll_objects;
@@ -47,15 +47,31 @@ void CollideComponent::Update(float dt)
 
 }
 
-void BoxCollideComponent::Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, std::vector<GameObject*>* coll_objects, int x, int y, UniGrid* uniGrid, WindowCollideComponent* windowCollider) {
+void BoxCollideComponent::Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, std::vector<GameObject*>* coll_objects, UniGrid* uniGrid, WindowCollideComponent* windowCollider) {
 	Component::Create(engine, go, game_objects);
+	int playerHitboxWidth = 8;
+	int playerHitboxHeight = 8;
+
 	this->coll_objects = coll_objects;
 	this->minX = go->horizontalPosition;
 	this->minY = go->verticalPosition;
-	this->maxX = minX + x;
-	this->maxY = minY + y;
+	this->maxX = minX + playerHitboxWidth;
+	this->maxY = minY + playerHitboxHeight;
 	this->uniGridref = uniGrid;
 	this->windowCollider = windowCollider;
+
+	this->currentCellLocation = {};
+	this->currentHashCellLocation = {}; // could this be the object index instead? 
+	this->prevHashCellLocation = {}; // could this be the object index instead? 
+
+	std::pair<int, int> prevHashCellCoord;
+	prevHashCellCoord.first = this->minX;
+	prevHashCellCoord.second = this->minY;
+	prevHashCellLocation.push_back(prevHashCellCoord);
+
+	prevHashCellCoord.first = this->maxX;
+	prevHashCellCoord.second = this->maxY;
+	prevHashCellLocation.push_back(prevHashCellCoord);
 }
 
 int BoxCollideComponent::getMinX() { return minX; }
@@ -63,59 +79,63 @@ int BoxCollideComponent::getMinY() { return minY; }
 int BoxCollideComponent::getMaxX() { return maxX; }
 int BoxCollideComponent::getMaxY() { return maxY; }
 
+
 void BoxCollideComponent::Update(float dt)
 {
+	// clear currentcellslocation
+	currentCellLocation.clear();
+	currentHashCellLocation.clear();
+
 
 	// take game objects x
 	BoxCollideComponent* boxCollider = go->GetComponent<BoxCollideComponent*>();
 	PlayerBehaviourComponent* playerBehaviourRef = go->GetComponent<PlayerBehaviourComponent*>();
 
-	int hitbox = 8;
+	int hitbox = 7;
 	int offset = 9;
 
 	minX = go->horizontalPosition;
 	minY = go->verticalPosition;
 	maxX = go->horizontalPosition;
 	maxY = (go->verticalPosition ); 
-
-
+		
 
 	if (playerBehaviourRef->getGear() == 1) {
 		offset = 16;
 	}
 	if (playerBehaviourRef->getGear() == 2) {
-		hitbox = 14;
-		offset = 24;
+		hitbox = 8;
+		offset = 24; 
 	}
 
 	if (playerBehaviourRef->getCurrentDirection() == 0) {
 		maxY -= offset;
 		minY = maxY - hitbox;
-		maxX += hitbox - 6;
-		engine->drawCell(Vector2D(minX, minY), Vector2D(maxX, maxY));
+		maxX += hitbox ;
+		//engine->drawCell(Vector2D(minX, minY), Vector2D(maxX, maxY));
 		//std::cout << "			|| MIN:  " << minX << " , " << minY << " || MAX: " << maxX << ", " << maxY << std::endl;
 	}
 	if (playerBehaviourRef->getCurrentDirection() == 1) {
 		maxX += offset + hitbox+1;
 		minX = maxX - hitbox+1;
-		maxY += hitbox - 6;
-		engine->drawCell(Vector2D(minX, minY), Vector2D(maxX, maxY));
+		maxY += hitbox;
+		//engine->drawCell(Vector2D(minX, minY), Vector2D(maxX, maxY));
 	}
 	if (playerBehaviourRef->getCurrentDirection() == 2) {
 		minY += offset;
 		maxY = minY + hitbox;
-		maxX += hitbox - 6;
-		engine->drawCell(Vector2D(minX, minY), Vector2D(maxX, maxY));
+		maxX += hitbox ;
+		//engine->drawCell(Vector2D(minX, minY), Vector2D(maxX, maxY));
 		//std::cout << "	// MIN:  " << minPosX << " , " << minPosY << " || MAX: " << maxPosX << ", " << maxPosY << std::endl;
 	}
 	if (playerBehaviourRef->getCurrentDirection() == 3) {
 		minX -= (offset + hitbox) ;
 		maxX = minX + hitbox ;
-		maxY += hitbox - 6;
-		engine->drawCell(Vector2D(minX, minY), Vector2D(maxX, maxY));
+		maxY += hitbox ;
+		//engine->drawCell(Vector2D(minX, minY), Vector2D(maxX, maxY));
 		//std::cout << "	// MIN:  " << minX << " , " << minY << " || MAX: " << maxX<< ", " << maxY<< std::endl;
 	}
-
+	engine->drawCell(Vector2D(minX, minY), Vector2D(maxX, maxY));
 	// check for edgecrashes
 
 	int windowX = 512;
@@ -152,8 +172,113 @@ void BoxCollideComponent::Update(float dt)
 	if (maxPosX > 62) { maxPosX = 62; }
 	if (maxPosY > 66) { maxPosY = 66; }
 	
-	//std::cout << "	// MIN:  " << minPosX << " , " << minPosY << " || MAX: " << maxPosX << ", " << maxPosY << std::endl;
+	int prevMinX = prevHashCellLocation[0].first / cellSize;
+	int prevMinY = prevHashCellLocation[0].second / cellSize;
+	int prevMaxX = prevHashCellLocation[1].first / cellSize;
+	int prevMaxY = prevHashCellLocation[1].second / cellSize;
 
+	if (prevMinX < 1) { prevMinX = 1; }
+	if (prevMinY < 8) { prevMinY = 8; }
+	if (prevMinX > 62) { prevMinX = 62; }
+	if (prevMinY > 66) { prevMinY = 66; }
+
+	if (prevMaxX < 1) { prevMaxX = 1; }
+	if (prevMaxY < 8) { prevMaxY = 8; }
+	if (prevMaxX > 62) { prevMaxX = 62; }
+	if (prevMaxY > 66) { prevMaxY = 66; }
+
+	//std::cout << "	// MIN:  " << minX << " , " << minY << " || MAX: " << maxX << ", " << maxY << std::endl;
+	//std::cout << "	// prev MIN:  " << prevHashCellLocation[0].first << " , " << prevHashCellLocation[0].second << " || MAX: " << prevHashCellLocation[1].first  << ", " << prevHashCellLocation[1].second  << std::endl;
+		// idk why create doesnt work here
+	if (prevMinX == 1) {
+		std::cout << "prevhashcell = 0" << std::endl;
+		prevHashCellLocation.clear();
+		std::pair<int, int> prevHashCellCoord;
+		prevHashCellCoord.first = this->minX;
+		prevHashCellCoord.second = this->minY;
+		prevHashCellLocation.push_back(prevHashCellCoord);
+
+		prevHashCellCoord.first = this->maxX;
+		prevHashCellCoord.second = this->maxY;
+		prevHashCellLocation.push_back(prevHashCellCoord);
+	}
+
+	//std::cout << "	prevhashcell " << prevHashCellLocation[0].first / cellSize  << ", " << prevHashCellLocation[0].second / cellSize << std::endl;
+	//std::cout << "	prevhashcell " << prevHashCellLocation[1].first / cellSize << ", " << prevHashCellLocation[1].second / cellSize << std::endl;
+	// get all objects in those cells
+	for (int a = minPosX; a <= maxPosX; a++) {
+		for (int b = minPosY; b <= maxPosY; b++) {
+			//currentCellLocation.push_back(uniGridref->grid[a][b]);
+
+			// find own location in object index, update current coordinates in the hashmap
+			std::pair<int, int> currentHashCellCoord;
+			currentHashCellCoord.first = a;
+			currentHashCellCoord.second = b;
+			currentHashCellLocation.push_back(currentHashCellCoord);
+
+			//std::cout << "	currenthashcell pushed box collide  -- " << currentHashCellCoord.first << ", " << currentHashCellCoord.second << std::endl;
+		}
+	}
+
+	
+	// god this is cursed
+	if (this->go->GetComponent<PlayerBehaviourComponent*>()->isRekt() == false) {
+		//std::cout << "		not rekt" << std::endl;
+		// current maxY < prev minY = UP
+		if (maxY < prevHashCellLocation[0].second) {
+			for (int a = minPosX; a <= maxPosX; a++) {
+				for (int b = minPosY; b < prevMinY; b++) {
+					if (uniGridref->grid[a][b].state.second != EMPTY) {
+						std::cout << "			UP		HASH		HIT" << std::endl;
+						//engine->drawCell(Vector2D(prevHashCellLocation[0].first, prevHashCellLocation[0].second), Vector2D(prevHashCellLocation[1].first, prevHashCellLocation[1].second));
+						this->go->Receive(WALLCRASH);
+						break;
+					}
+				}
+			}
+		}
+
+
+		// current maxX  > prev maxX = RIGHT
+		if (maxX > prevHashCellLocation[1].first) {
+			for (int a = prevMaxX; a < minPosX; a++) {
+				for (int b = minPosY; b < maxPosY; b++) {
+					if (uniGridref->grid[a][b].state.second != EMPTY) {
+						std::cout << "			RIGHT		HASH		HIT" << std::endl;
+						this->go->Receive(WALLCRASH);
+						break;
+					}
+				}
+			}
+		}
+		// //current maxX < prevMaxX = LEFT
+		if (maxX < prevHashCellLocation[1].first) {
+			for (int a = minPosX; a < prevMinX; a++) {
+				for (int b = minPosY; b <= maxPosY; b++) {
+					if (uniGridref->grid[a][b].state.second != EMPTY) {
+						std::cout << "			LEFT		HASH		HIT" << std::endl;
+						this->go->Receive(WALLCRASH);
+						break;
+					}
+				}
+			}
+		}
+		// current maxY > prev maxY = DOWN
+		if (minY > prevHashCellLocation[1].second) {
+			for (int a = minPosX; a < maxPosX; a++) {
+				for (int b = prevMaxY; b < minPosY; b++) {
+					if (uniGridref->grid[a][b].state.second != EMPTY) {
+						std::cout << "			DOWN		HASH		HIT" << std::endl;
+						this->go->Receive(WALLCRASH);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	engine->drawCell(Vector2D((prevHashCellLocation[0].first), (prevHashCellLocation[0].second)), Vector2D((prevHashCellLocation[1].first), (prevHashCellLocation[1].second)));
+	//// original ////
 	for (int a = minPosX; a <= maxPosX; a++) {
 		for (int b = minPosY; b <= maxPosY; b++) {
 			if (uniGridref->grid[a][b].state.second != EMPTY) {
@@ -162,6 +287,23 @@ void BoxCollideComponent::Update(float dt)
 			}
 		}
 	}
+
+
+	// remember for next frame comparison
+	prevHashCellLocation.clear();
+
+	std::pair<int, int> prevHashCellCoord;
+	prevHashCellCoord.first = minX;
+	prevHashCellCoord.second = minY;
+	prevHashCellLocation.push_back(prevHashCellCoord);
+
+	prevHashCellCoord.first = maxX;
+	prevHashCellCoord.second = maxY;
+	prevHashCellLocation.push_back(prevHashCellCoord);
+
+	//std::cout << "	prevhashcell pushed box collide  -- " << prevHashCellCoord.first << ", " << prevHashCellCoord.second << std::endl;
+		
+	
 }
 
 void BoxCollideComponent::InsertCurrentCell(UniGridCell cell) {

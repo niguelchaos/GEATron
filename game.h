@@ -14,7 +14,7 @@ class Game : public GameObject
 	std::vector<const char*> backgroundNames;
 
 	Player * player;
-	Player* player2;
+	Player * player2;
 	int winner = 0;
 
 	GameObject* window;
@@ -23,28 +23,32 @@ class Game : public GameObject
 
 	bool game_over = false;
 	bool game_won = false;
-	bool aliens_alive = false;
 
-	unsigned int score = 0;
+	unsigned int p1Score = 0;
+	unsigned int p2Score = 0;
 
 	int prevTime;
 	int currentTime;
 	int elapsedTime = 0;
 
-	int playerHitboxWidth = 8;
-	int playerHitboxHeight = 8;
+	//int playerHitboxWidth = 8;
+	//int playerHitboxHeight = 8;
 
 	int startFrameTime;
 	int frameTicksDuration;
 
-	int frameTicksLimit = 1000 / 60;
-
+	int frameTicksLimit = 1000 / 400;
+	
+	// pref all input in an inputhandler
 	bool prevR = false;
 	bool prevB = false;
 
+	// pref in sound object
 	bool crashplayed = false;
 	bool tictacplayed = false;
 	bool erynoiceplayed = false;
+
+	bool scoreIncreased = false;
 
 public:
 
@@ -83,22 +87,12 @@ public:
 		PlayerBehaviourComponent* player_behaviour = new PlayerBehaviourComponent();
 		player_behaviour->Create(engine, player, &game_objects);
 
-		std::vector<const char*> playerSpriteNames;
-		playerSpriteNames.push_back("data/UpPlayer.bmp");
-		playerSpriteNames.push_back("data/RightPlayer.bmp");
-		playerSpriteNames.push_back("data/DownPlayer.bmp");
-		playerSpriteNames.push_back("data/LeftPlayer.bmp");
-		playerSpriteNames.push_back("data/Explosion1.bmp");
-		playerSpriteNames.push_back("data/Explosion2.bmp");
-		playerSpriteNames.push_back("data/Explosion3.bmp");
-		playerSpriteNames.push_back("data/Explosion4.bmp");
-
 		PlayerRenderComponent* player_render = new PlayerRenderComponent();
-		player_render->Create(engine, player, &game_objects, playerSpriteNames, player_behaviour);
+		player_render->Create(engine, player, &game_objects, player_behaviour);
 
 		// Bike Collision Component
 		BoxCollideComponent* player_collide = new BoxCollideComponent();
-		player_collide->Create(engine, player, &game_objects, (std::vector<GameObject*>*)&player_cells_check, playerHitboxWidth, playerHitboxHeight, uniformGrid, windowCollider);
+		player_collide->Create(engine, player, &game_objects, (std::vector<GameObject*>*)&player_cells_check, uniformGrid, windowCollider);
 
 		player->Create();
 		player->AddComponent(player_behaviour);
@@ -117,25 +111,13 @@ public:
 		Player2BehaviourComponent* player2_behaviour = new Player2BehaviourComponent();
 		player2_behaviour->Create(engine, player2, &game_objects);
 
-		// be in player instead separate comp
-		std::vector<const char*> player2SpriteNames;
-		player2SpriteNames.push_back("data/UpEnemy.bmp");
-		player2SpriteNames.push_back("data/RightEnemy.bmp");
-		player2SpriteNames.push_back("data/DownEnemy.bmp");
-		player2SpriteNames.push_back("data/LeftEnemy.bmp");
-
-		player2SpriteNames.push_back("data/Explosion1.bmp");
-		player2SpriteNames.push_back("data/Explosion2.bmp");
-		player2SpriteNames.push_back("data/Explosion3.bmp");
-		player2SpriteNames.push_back("data/Explosion4.bmp");
-
-		PlayerRenderComponent* player2_render = new PlayerRenderComponent();
+		Player2RenderComponent* player2_render = new Player2RenderComponent();
 		//std::cout << "playerspritenames address" << &playerSpriteNames << std::endl;
-		player2_render->Create(engine, player2, &game_objects, player2SpriteNames, player2_behaviour);
+		player2_render->Create(engine, player2, &game_objects, player2_behaviour);
 
 		// Bike Collision Component
 		BoxCollideComponent* player2_collide = new BoxCollideComponent();
-		player2_collide->Create(engine, player2, &game_objects, (std::vector<GameObject*>*) & player_cells_check, playerHitboxWidth, playerHitboxHeight, uniformGrid, windowCollider);
+		player2_collide->Create(engine, player2, &game_objects, (std::vector<GameObject*>*) & player_cells_check, uniformGrid, windowCollider);
 
 		player2->Create();
 		player2->AddComponent(player2_behaviour);
@@ -200,9 +182,7 @@ public:
 			engine->quit();
 		}
 		if (keys.r == true && prevR == false) {
-			//Destroy();
-			//Create(this->engine);
-			//Init();
+			restart();
 			std::cout << "restart" << std::endl;
 		}
 		prevR = keys.r;
@@ -255,6 +235,7 @@ public:
 		showInterface();
 		if (game_over == true) {
 			showGameWon();
+			checkIsDoneExploding();
 		}
 		engine->swapBuffers();
 		engine->clearWindow();
@@ -268,12 +249,7 @@ public:
 			game_over = true;
 			SDL_Log("Game:: OVER");
 			SDL_Log("HOTEL:: TRIVAGO");
-			for (int i = 0; i < player_pool.size(); i++) {
-				if (player_pool[i]->GetComponent<PlayerRenderComponent*>()->isDoneExploding() == true) {
-					std::cout << "Done exploding" << std::endl;
-					player_pool[i]->enabled = false;
-				}
-			}
+
 		}
 	}
 
@@ -284,31 +260,30 @@ public:
 		for (auto go = game_objects.begin(); go != game_objects.end(); go++)
 			(*go)->Destroy();
 
-		//life_sprite->destroy();
-	
-		//rockets_pool.Destroy();
-		//bombs_pool.Destroy();
-		//enemies.Destroy();
-		//enemies_grid->Destroy();
 		delete uniformGrid;
+		delete wallController;
 		player->Destroy();
 		player2->Destroy();
 		window->Destroy();
 	}
 	void showGameover() {
-		int gameoverXpos = 220; 	int gameoverYpos = 32;
+		int gameoverXpos = 220; 	int gameoverYpos = 40;
 		std::string gameoverString = "=== GAME OVER ===";
 		const char* gameoverChar = gameoverString.c_str();
 		engine->drawText(gameoverXpos, gameoverYpos, gameoverChar);
 	}
 	void showGameWon() {
-		int levelwonXpos = 190; 	int levelwonYpos = 32;
+		int levelwonXpos = 180; 	int levelwonYpos = 37;
 		std::string levelwonString;
 
 		engine->finishSound();
 		if (winner == 1) {
 			levelwonString = "=== PLAYER 1 WON! ===";
-			
+			if (scoreIncreased == false) {
+				p1Score++;
+				scoreIncreased = true;
+			}
+
 			if (crashplayed == false) {
 				engine->PlayMp3(0, 1);
 				crashplayed = true;
@@ -322,6 +297,10 @@ public:
 		}
 		if (winner == 2) {
 			levelwonString = "=== PLAYER 2 WON! ===";
+			if (scoreIncreased == false) {
+				p2Score++;
+				scoreIncreased = true;
+			}
 
 			if (crashplayed == false) {
 				engine->PlayMp3(0, 1);
@@ -331,7 +310,7 @@ public:
 				if (tictacplayed == false) {
 					engine->PlayMp3(0, 2);
 					tictacplayed = true;
-					std::cout << "playingmp3" << std::endl;
+					//std::cout << "playingmp3" << std::endl;
 				}
 			}
 		}
@@ -353,20 +332,26 @@ public:
 		engine->fillRect(headerMin, headerMax, 150, 100, 200);
 
 		int livesXpos = 40; 	int livesYpos = 25;
-		int scoreXpos = 50; 	int scoreYpos = 25;
+		int scoreXpos = 180; 	int scoreYpos = 15;
 		int timeXpos = 200; 	int timeYpos = 25;
-		//int headerXminpos = 0;	int headerYminpos = 0;
-		//int headerXmaxpos = 64;	int headerYmaxpos = 64;
+
 
 		//std::string livesString = "LIVES LEFT = ";
 		//livesString.append(std::to_string(player->lives));
 		//const char* livesChar = livesString.c_str();
 		//engine->drawText(livesXpos, livesYpos, livesChar);
 
-		std::string scoreString = "SCORE: FOREVER ";
-		scoreString.append(std::to_string(score));
+		std::string scoreString = "   < P1 | SCORE | P2 >   ";
+
+		std::string p1scoreString = std::to_string(p1Score);
+		//scoreString.append(std::to_string(p1Score));
+		const char* p1scoreChar = p1scoreString.c_str();
+		engine->drawText(scoreXpos - 10, scoreYpos, p1scoreChar);
+
+		scoreString.append(std::to_string(p2Score));
 		const char* scoreChar = scoreString.c_str();
 		engine->drawText(scoreXpos, scoreYpos, scoreChar);
+
 
 		std::string timeString = "HISCORE: ";
 		timeString.append(std::to_string(game_speed));
@@ -375,7 +360,30 @@ public:
 
 
 	}
-	void drawBackground() {
+	void checkIsDoneExploding() {
+		for (int i = 0; i < player_pool.size(); i++) {
+			if (player_pool[i]->GetComponent<PlayerRenderComponent*>()->isDoneExploding() == true) {
+				//std::cout << "Done exploding" << std::endl;
+				player_pool[i]->enabled = false;
+			}
+		}
+	}
+
+	void restart() {
+		currentBackground = 0;
+		uniformGrid->reset();
+		for (int i = 0; i < player_pool.size(); i++) {
+			player_pool[i]->reset();
+		}
+		game_over = false;
+		engine->finishSound();
+		engine->finishMp3();
+		crashplayed = false;
+		tictacplayed = false;
+		erynoiceplayed = false;
+		scoreIncreased = false;
+
+		winner = 0;
 		
 	}
 

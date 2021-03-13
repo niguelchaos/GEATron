@@ -1,6 +1,5 @@
 #pragma once
 #include <set>
-#include "object_pool.h"
 #include "game_object.h"
 #include "avancezlib.h"
 #include <stdio.h>
@@ -31,7 +30,7 @@ public:
 	int windowX, windowY;
 	std::vector<GameObject*>* lightcycles;
 	//ObjectPool<GameObject>* coll_objects;
-	ObjectPool<GameObject>* grid_coll_objects;
+	std::vector<GameObject>* grid_coll_objects;
 	// vector2d to remember positions of each gridsquare, and objectpool to note whats inside
 	std::vector<std::vector<UniGridCell>> grid;
 
@@ -60,6 +59,7 @@ public:
 	virtual void Update(double dt);
 	void UpdateState(double dt);
 	void UniGrid::CheckCollisions();
+	void reset();
 
 
 };

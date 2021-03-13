@@ -277,8 +277,6 @@ void AvancezLib::drawImage(const char* path, int minX, int minY, int maxX, int m
 }
 
 void AvancezLib::drawCell(Vector2D minPos, Vector2D maxPos) {
-
-
 	SDL_Rect rect;
 
 	rect = { (int)minPos.x, (int)minPos.y, (int)(maxPos.x - minPos.x), (int)(maxPos.y - minPos.y) };
@@ -286,7 +284,7 @@ void AvancezLib::drawCell(Vector2D minPos, Vector2D maxPos) {
 	SDL_RenderDrawRect(renderer, &rect);
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 }
-\
+
 void AvancezLib::fillRect(Vector2D minPos, Vector2D maxPos, int r, int g, int b) {
 	SDL_Rect rect{};
 	rect = { (int)minPos.x, (int)minPos.y, (int)(maxPos.x - minPos.x), (int)(maxPos.y - minPos.y) };

@@ -113,6 +113,26 @@ void PlayerBehaviourComponent::Update(float dt)
 
 }
 
+void PlayerBehaviourComponent::reset() {
+	if (playerNum == 1) {
+		this->startX = 288;
+		this->startY = 512;
+		this->currentDirection = 0;
+	}
+	if (playerNum == 2) {
+		this->startX = 160;
+		this->startY = 128;
+		this->currentDirection = 2;
+	}
+	Init();
+	rekt = false;
+	paused = false;
+	gear = 1;
+	speed = 16;
+
+}
+
+
 void Player2BehaviourComponent::Update(float dt)
 {
 	AvancezLib::KeyStatus keys;
@@ -211,23 +231,6 @@ void PlayerBehaviourComponent::Receive(Message m)
 }
 
 
-void PlayerBehaviourComponent::playRektMp3() {
-	//engine->LoadMp3("data/soddingtictac.mp3");
-	//engine->PlayMp3(0);
-}
-//void Player2BehaviourComponent::Receive(Message m)
-//{
-//	if (m == WALLCRASH) {
-//		rekt = true;
-//		engine->finishSound();
-//		engine->finishMp3();
-//		if (engine->isMp3Playing() == 0) {
-//			engine->LoadMp3("data/sickcrash.mp3");
-//			engine->PlayMp3(0);
-//		}
-//	}
-//}
-
 bool PlayerBehaviourComponent::isRekt() {
 	return rekt;
 }
@@ -276,13 +279,45 @@ void PlayerBehaviourComponent::Pause() {
 	timer = 0;
 }
 
-void PlayerRenderComponent::Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, std::vector<const char*> sprite_names, PlayerBehaviourComponent* playerBehaviourRef)
+void PlayerRenderComponent::Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, PlayerBehaviourComponent* playerBehaviourRef)
 {
 	Component::Create(engine, go, game_objects);
 	this->playerBehaviourRef = playerBehaviourRef;
 
-	for (int i = 0; i < sprite_names.size(); i++) {
-		Sprite* sprite = engine->createSprite(sprite_names[i]);
+	std::vector<const char*> playerSpriteNames;
+	playerSpriteNames.push_back("data/UpPlayer.bmp");
+	playerSpriteNames.push_back("data/RightPlayer.bmp");
+	playerSpriteNames.push_back("data/DownPlayer.bmp");
+	playerSpriteNames.push_back("data/LeftPlayer.bmp");
+	playerSpriteNames.push_back("data/Explosion1.bmp");
+	playerSpriteNames.push_back("data/Explosion2.bmp");
+	playerSpriteNames.push_back("data/Explosion3.bmp");
+	playerSpriteNames.push_back("data/Explosion4.bmp");
+
+	for (int i = 0; i < playerSpriteNames.size(); i++) {
+		Sprite* sprite = engine->createSprite(playerSpriteNames[i]);
+		sprites.push_back(sprite);
+	}
+}
+
+void Player2RenderComponent::Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, PlayerBehaviourComponent* playerBehaviourRef)
+{
+	Component::Create(engine, go, game_objects);
+	this->playerBehaviourRef = playerBehaviourRef;
+
+	std::vector<const char*> player2SpriteNames;
+	player2SpriteNames.push_back("data/UpEnemy.bmp");
+	player2SpriteNames.push_back("data/RightEnemy.bmp");
+	player2SpriteNames.push_back("data/DownEnemy.bmp");
+	player2SpriteNames.push_back("data/LeftEnemy.bmp");
+
+	player2SpriteNames.push_back("data/Explosion1.bmp");
+	player2SpriteNames.push_back("data/Explosion2.bmp");
+	player2SpriteNames.push_back("data/Explosion3.bmp");
+	player2SpriteNames.push_back("data/Explosion4.bmp");
+
+	for (int i = 0; i < player2SpriteNames.size(); i++) {
+		Sprite* sprite = engine->createSprite(player2SpriteNames[i]);
 		sprites.push_back(sprite);
 	}
 }
@@ -317,7 +352,7 @@ void PlayerRenderComponent::Update(float dt)
 		xPos = int(go->horizontalPosition - lateralOffset);
 		yPos = int(go->verticalPosition - offset);
 	}
-	if (isRekt) {
+	if (this->go->GetComponent<PlayerBehaviourComponent*>()->isRekt()) {
 		int expOffset = 12;
 		if (playerBehaviourRef->getCurrentDirection() == 0) {
 			xPos = int(go->horizontalPosition - expOffset);
@@ -338,17 +373,17 @@ void PlayerRenderComponent::Update(float dt)
 		//std::cout << xPos << ", " << yPos << std::endl;
 	}
 
-	if (!isRekt) {
+	if (!this->go->GetComponent<PlayerBehaviourComponent*>()->isRekt()) {
 
 		if (playerBehaviourRef->getCurrentDirection() == 0) {
 			//std::cout << "showing going up" << std::endl;
-			sprites[0]->draw(xPos, yPos);
+			sprites[0]->draw(xPos , yPos );
 		}
 		if (playerBehaviourRef->getCurrentDirection() == 1) {
 			sprites[1]->draw(xPos, yPos);
 		}
 		if (playerBehaviourRef->getCurrentDirection() == 2) {
-			sprites[2]->draw(xPos, yPos);
+			sprites[2]->draw(xPos, yPos );
 		}
 		if (playerBehaviourRef->getCurrentDirection() == 3) {
 			sprites[3]->draw(xPos, yPos);
@@ -375,6 +410,7 @@ void PlayerRenderComponent::Update(float dt)
 		sprites[4]->draw(xPos, yPos);
 		explosionAnimationFrame++;
 	}
+	//std::cout << " Expl frame: " << explosionAnimationFrame << std::endl;
 	if (explosionAnimationFrame > 40) {
 		explosionAnimationFrame = 0;
 		doneExploding = true;
@@ -382,7 +418,7 @@ void PlayerRenderComponent::Update(float dt)
 
 	}
 
-	if (isRekt) {
+	if (this->go->GetComponent<PlayerBehaviourComponent*>()->isRekt()) {
 		explosionAnimationFrame++;
 	}
 
@@ -391,6 +427,11 @@ void PlayerRenderComponent::Update(float dt)
 
 bool PlayerRenderComponent::isDoneExploding() {
 	return doneExploding;
+}
+
+void PlayerRenderComponent::reset() {
+	explosionAnimationFrame = 0;
+	doneExploding = false;
 }
 
 void PlayerRenderComponent::Destroy() 
@@ -405,7 +446,7 @@ void PlayerRenderComponent::Destroy()
 void PlayerRenderComponent::Receive(Message m)
 {
 	if (m == WALLCRASH) {
-		isRekt = true;
+		//isRekt = true;
 	}
 }
 
@@ -426,7 +467,7 @@ void Player::Receive(Message m)
 		}
 
 		this->GetComponent<PlayerBehaviourComponent*>()->Receive(WALLCRASH);
-		this->GetComponent<PlayerRenderComponent*>()->Receive(WALLCRASH);
+		//this->GetComponent<PlayerRenderComponent*>()->Receive(WALLCRASH);
 
 		if (lives < 0 && enabled == true) {
 			SDL_Log("Player::REKT");
@@ -439,5 +480,11 @@ void Player::RemoveLife()
 {
 	lives--;
 	//SDL_Log("remaining lives %d", lives);
+}
+
+void Player::reset() {
+	enabled = true;
+	this->GetComponent<PlayerBehaviourComponent*>()->reset();
+	this->GetComponent<PlayerRenderComponent*>()->reset();
 }
 

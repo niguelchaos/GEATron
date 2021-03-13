@@ -1,7 +1,6 @@
 #pragma once
 
 #include <set>
-#include "object_pool.h"
 #include "unigrid.h"
 
 //#include "player.h"
@@ -47,10 +46,10 @@ public:
 class CollideComponent : public Component
 {
 protected:
-	ObjectPool<GameObject> * coll_objects; // collision will be tested with these objects
+	std::vector<GameObject> * coll_objects; // collision will be tested with these objects
 
 public:
-	virtual void Create(AvancezLib* engine, GameObject * go, std::set<GameObject*> * game_objects, ObjectPool<GameObject> * coll_objects);
+	virtual void Create(AvancezLib* engine, GameObject * go, std::set<GameObject*> * game_objects, std::vector<GameObject> * coll_objects);
 	virtual void Update(float dt);
 };
 
@@ -82,7 +81,9 @@ class BoxCollideComponent : public CollideComponent
 	UniGrid* uniGridref;
 	WindowCollideComponent* windowCollider;
 	std::vector<UniGridCell> currentCellLocation;
+	std::vector<std::pair<int, int>> prevHashCellLocation;
 	std::vector<std::pair<int, int>> currentHashCellLocation; // i really think this is the object index instead
+	
 
 	int minX;
 	int minY;
@@ -90,7 +91,7 @@ class BoxCollideComponent : public CollideComponent
 	int maxY;
 
 public:
-	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, std::vector<GameObject*>* coll_objects, int x, int y, UniGrid* uniGrid, WindowCollideComponent* windowCollider);
+	virtual void Create(AvancezLib* engine, GameObject* go, std::set<GameObject*>* game_objects, std::vector<GameObject*>* coll_objects, UniGrid* uniGrid, WindowCollideComponent* windowCollider);
 	virtual void Update(float dt);
 	void InsertCurrentCell(UniGridCell cell);
 	int getMinX();

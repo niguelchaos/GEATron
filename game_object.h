@@ -5,7 +5,7 @@
 #include <set>
 #include <string>
 
-enum Message { HIT, ALIEN_HIT, GAME_OVER, LEVEL_WIN, NO_MSG, QUIT, EDGECRASH, WALLCRASH };
+enum Message { GAME_OVER, LEVEL_WIN, NO_MSG, QUIT, WALLCRASH };
 enum DirectionState { EMPTY = 0,  VERTICAL = 1, HORIZONTAL = 2, TOPLEFT = 3, TOPRIGHT = 4, BOTRIGHT = 5, BOTLEFT = 6};
 
 class Component;
@@ -38,7 +38,7 @@ public:
 	template<typename T>
 	T GetComponent() {
 		for (Component* c : components) {
-			T t = dynamic_cast<T>(c);  //ugly but it works...
+			T t = dynamic_cast<T>(c);  //ugly but it works... - why is this ugly again?
 			if (t != nullptr) {
 				return t;
 			}

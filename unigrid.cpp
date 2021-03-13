@@ -106,8 +106,8 @@ void UniGrid::Update(double dt)
 	//go through all the cycles, put them in corresponding cells
 	for (int i = 0; i < lightcycles->size(); i++) {
 		GameObject* currentCycle = lightcycles->at(i);
-		int cycleWidth = 14;
-		int cycleHeight = 32;
+		int cycleWidth = 7;
+		int cycleHeight = 7;
 		int positionWidth = 6;
 
 		//floor used to make it int - determines which row and column by dividing cellsize
@@ -132,7 +132,7 @@ void UniGrid::Update(double dt)
 				currentHashCellCoord.first = a;
 				currentHashCellCoord.second = b;
 				uniGrid->hashTable[currentHashCellCoord].push_back(currentCycle);
-
+				//std::cout << "	hash X/Y:   " << currentHashCellCoord.first << ", " << currentHashCellCoord.second << std::endl;
 				// update objectindex
 				uniGrid->objectIndex[currentHashCellCoord] = currentCycle;
 
@@ -174,6 +174,7 @@ void UniGrid::UpdateState(double dt)
 		int maxPosX = (currentCycle->horizontalPosition) / uniGrid->cellSize;
 		int maxPosY = (currentCycle->verticalPosition) / uniGrid->cellSize;
 
+		// determine cells to place walls
 		if (currentCycle->GetComponent<PlayerBehaviourComponent*>()->getCurrentDirection() == 0) {
 			minPosY = ((currentCycle->verticalPosition) - (positionWidth)) / uniGrid->cellSize;
 		}
@@ -307,6 +308,15 @@ void UniGrid::CheckCollisions() {
 		// 1 update position
 		// 2 check collisions
 		// player should ask grid if they have crashed or not
+	}
+}
+
+void UniGrid::reset() {
+	for (int a = 0; a < this->grid.size(); a++) {
+		for (int b = 0; b < this->grid[a].size(); b++) {
+			this->grid[a][b].state.first = EMPTY;
+			this->grid[a][b].state.second = EMPTY;
+		}
 	}
 }
 
